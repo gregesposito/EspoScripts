@@ -1,0 +1,40 @@
+Installer: Esposito 
+Room: 101 
+Computer Name: DTSO-X201-7
+Computer Serial Number: R96NA9G
+Monitor Name      : DELL 3008WFP
+Serial Number     : G501H87939CL
+Monitor Name      : DELL 2005FPW
+Serial Number     : T61305AQ3FWL
+Monitor Name      : hp L2335
+Serial Number     : CNP421Z09L
+Monitor Name      : HP L1706
+Serial Number     : CND6200QW4
+Monitor Name      : HP L1706
+Serial Number     : CND6200QW4
+Monitor Name      : WIDI-8788    
+Serial Number     : 
+Monitor Name      : 
+Serial Number     : 
+Monitor Name      : LCD19D(ANA)
+Serial Number     : WCCE5103818
+Monitor Name      : PNR PL1910MW
+Serial Number     : 1
+Monitor Name      : PNR PL1910MW
+Serial Number     : 1
+Monitor Name      : SMART Unifi45
+Serial Number     : 
+Monitor Name      : SMART UX60
+Serial Number     : B012CJ23D0161
+Monitor Name      : SBID8070i
+Serial Number     : N012DW1800941
+Monitor Name      : VA1932 Series
+Serial Number     : RMH102920087
+Monitor Name      : VA1932 Series
+Serial Number     : RMH102920087
+Monitor Name      : VG730m
+Serial Number     : QBY072543971
+Monitor Name      : VG730m
+Serial Number     : QBY072543972
+Monitor Name      : VP930 Series
+Serial Number     : PQ8060200602

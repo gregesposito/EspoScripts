@@ -1,0 +1,1 @@
+netsh firewall set opmode mode=disable

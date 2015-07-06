@@ -1,0 +1,286 @@
+                                                                   Revision : 01
+--------------------------------------------------------------------------------
+Software name      Utilities To Read and Write Asset ID Information
+
+Support models     ThinkPad L410, L412, L420, L421, L430
+                   ThinkPad L510, L512, L520, L530
+                   ThinkPad R400
+                   Thinkpad R500
+                   ThinkPad SL410
+                   ThinkPad SL510
+                   ThinkPad T400, T400s, T410, T410i, T410s, T410si, T420, T420i,
+                            T420s, T420si, T430, T430i, T430s, T430si
+                   ThinkPad T500, T510, T510i, T520, T520i, T530, T530i
+                   ThinkPad W500, W510, W520, W530
+                   ThinkPad W700, W700ds, W701, W701ds
+                   ThinkPad X1, X1 Carbon
+                   ThinkPad X100e, X120e, X121e, X130e
+                   ThinkPad X200, X200s, X200si, X200 Tablet, X201, X201i, X201s,
+                            X201 Tablet, X220, X220i, X220 Tablet, X220i Tablet,
+                            X230, X230i, X230 Tablet, X230i Tablet
+                   ThinkPad X300, X301
+
+                   ThinkPad Edge 11", 13", 14", 15"
+                   ThinkPad Edge E10
+                   ThinkPad Edge E30, E31
+                   ThinkPad Edge E40
+                   ThinkPad Edge E50
+                   ThinkPad Edge E120, E125
+                   ThinkPad Edge E220s
+                   ThinkPad Edge E320, E325
+                   ThinkPad Edge E420, E420s, E425
+                   ThinkPad Edge E520, E525
+                   ThinkPad Edge S430
+
+                   ThinkPad T40, T40p, T41, T41p, T42, T42p, T43, T43p
+                   ThinkPad T60, T60p, T61, T61p
+                   ThinkPad G40, G41
+                   ThinkPad R40, R40e
+                   ThinkPad R50, R50e, R50p, R51, R51e, R51p, R52
+                   ThinkPad R60, R60e, R61, R61e
+                   ThinkPad X30, X31, X32
+                   ThinkPad X40, X41, X41 Tablet
+                   ThinkPad X60, X60s, X60 Tablet, X61, X61s, X61 Tablet
+                   ThinkPad Z60m, Z60t, Z61e, Z61m, Z61p, Z61t
+                   ThinkPad Reserve Edition
+
+Operating System   DOS
+
+Versions           1.02
+
+
+--------------------------------------------------------------------------------
+WHAT THIS PACKAGE DOES
+
+  The utilities running on DOS to read out and store an asset ID data from
+  ThinkPad is to provide query and set feature of an asset ID and other
+  information.
+
+  The AIACustm.exe, AIACustm.ini, AIARead.exe, AIARead.txt, AIAWrite.exe and
+  AIAWrite.txt files should be copied to DOS bootable media (Floppy, CD/DVD, USB
+  memory key, etc.).
+  AIARead.exe shows an Asset Information Area (AIA) data.
+  AIAWrite and AIACustm set or modify the AIA data.
+
+  If this package has been installed, updating (overwrite-installing) this
+  package will fix problems, add new functions, or expand functions as noted
+  below.
+
+  This program is language independent and can be used with any language system.
+
+
+--------------------------------------------------------------------------------
+CHANGES IN THIS RELEASE
+  Version 1.02
+
+[Important updates]
+  Nothing.
+
+[New functions or enhancements]
+- Added support for ThinkPad L430,L530,T430,T430i,T430s,T430si,T530,T530i,W530,
+  X1,X1 Carbon,X121e,X130e,X230,X230i,X230 Tablet,X230i Tablet.
+- Added support for ThinkPad Edge E120,E125,E320,E325,E425,E525,S430.
+
+[Problem fixes]
+  Nothing.
+
+
+--------------------------------------------------------------------------------
+DETERMINING WHICH VERSION IS INSTALLED
+
+  AIACustm.exe
+  Run the AIACustm without parameter, it will show the version information.
+
+  AIAWrite.exe, AIARead.exe
+  Run the AIAWrite and AIARead with /d parameter, it will show the version
+  information followed by help and additional information.
+
+
+--------------------------------------------------------------------------------
+PROGRAM EXECUTION NOTES
+
+  AIACustm.exe, AIARead.exe and AIAWrite.exe run with "/?" command line parameter
+  to show information about the execution of these programs.
+  DOS more.com command will be helpful to read those help text.
+        AIACustm /? | more
+  (this would require that the MORE.COM file is in the execution path)
+  It shows the optional command line parameters, the description of the groups
+  and fields and the return code (exit code) information.
+  The command line format of each of these utility programs follows:
+
+  AIACustm.exe [inputfilename]
+    Where:
+      inputfilename is the name of the ini file that defines the AIA data to be
+                    written to the ThinkPad.  If no inputfilename is specified,
+                    then AIACustm.ini will be used.  The AIACustm.ini or other
+                    input file must be edited or created with the desired
+                    keyword values before executing AIACustm.exe.
+
+  AIAWrite.exe group field1=[value1]...[fieldn=[valuen]]|/f=filename
+    Where:
+      group    is the name of the device group.
+      fieldn   is the name of the field to write.
+      valuen   is the value to be assigned to fieldn.  For the USERDEVICE group,
+               a blank value means delete this field if the field already exists
+               or create the field with a NULL value if the field does not
+               exist.  For all other groups, it means assign a zero or null
+               value.
+      filename is the name of the file that contains the desired field/value
+               pairs.  Each line in this file contains one field/value pair,
+               separated by '='.
+
+  AIARead.exe group [field] [/f=filename] [/a] [/s] [/x] [/p=prefix]
+    Where:
+      group    is the name of the device group.
+      field    is the name of the field to read (default is all fields).
+      filename is the name of the file where the output results are to be
+               written to (default is stdout).
+      /a       is used to append to the output file (default is to overwrite
+               the file).
+      /s       is used to format the output as SET statements.
+               Ie., 'SET name=value' (default is name=value).
+      /x       is used to exclude fields that are set to null strings or have
+               a value of zero.
+      /p       is used to prepend the 'prefix' to the name of each field.
+
+
+--------------------------------------------------------------------------------
+DEVICE GROUPS AND FIELDS
+
+  All options, group names and field names are case-insensitive, except for the
+  USERDEVICE group and the prefix value.
+
+  If no options are specified or an incorrect option is specified, then the help
+  text for the utility is displayed.
+
+  Here is a list of the valid group names and their associated fields:
+
+  NETWORKCONNECTION  NUMNICS
+                     GATEWAY
+                     IPADDRESS[n]   (1<=n<=NUMNICS, default is 1)
+                     SUBNETMASK[n]
+                     SYSTEMNAME
+                     LOGINNAME
+
+  USERDEVICE         <Field1>  -  These fields are defined by the user.
+                     :            The maximum number of user fields is five.
+                     <Fieldn>
+
+  PRELOADPROFILE     IMAGEDATE
+                     IMAGE
+
+  USERASSETDATA      PURCHASE_DATE
+                     LAST_INVENTORIED
+                     WARRANTY_END
+                     WARRANTY_DURATION
+                     AMOUNT
+                     ASSET_NUMBER
+
+  LEASEDATA          LEASE_START_DATE
+                     LESE_END_DATE
+                     LEASE_TERM
+                     LEASE_AMOUNT
+                     LESSOR
+
+  OWNERDATA          OWNERNAME
+                     DEPARTMENT
+                     LOCATION
+                     PHONE_NUMBER
+                     OWNERPOSITION
+
+
+--------------------------------------------------------------------------------
+PROGRAM RETURN CODES (EXIT CODES)
+
+  This is the list of return codes (exit codes) provided by the AIACustm.exe,
+  AIARead.exe and AIAWrite.exe programs when they end.  The return code is able
+  to be tested within a batch file by the ErrorLevel batch file command if
+  desired. (Please refer to your DOS mamnual for the usage.)
+
+  Hex
+  Code  Description
+  ----  -----------
+  00    Successful completion
+  01    RFID EPROM Error - Communication error
+  02    RFID EPROM Error - Bad header
+  03    RFID EPROM Error - Unknown version
+  04    RFID EPROM Error - Out of space
+  05    RFID EPROM Error - Reread failure 1
+  06    RFID EPROM Error - Reread failure 2
+  07    RFID EPROM Error - Invalid checksum
+  08    RFID EPROM Error - Invalid instance
+  09    RFID EPROM Error - RFID EPROM not found
+  0A    RFID EPROM Error - User area is corrupt
+  0B    RFID EPROM Error - RFID area is corrupt
+  20    File open failed (disk full, write protected file, other open error)
+  21    A valid field was not found in the AIA data area
+  22    Error attempting to format and display an output line
+  23    Group option is required, but was not specified
+  24    An unknown Group name was entered
+  25    Cannot find the Field name associated with the Group
+  26    The '=' separator field is missing from the /f option
+  27    The '=' separator field is missing from the /p option
+  28    An unsupported option was specified
+  29    User specified the nth NIC 'n' which is either invalid or larger than
+        the NUMNICS value
+  2A    More than five (5) Label=Value pars were specified for the USERDEVICE
+        group
+  2B    This system does not appear to have an RFID EPROM (EEPROM)
+
+
+--------------------------------------------------------------------------------
+VERSION INFORMATION
+
+  The following versions have been released to date.
+
+  Package  AIACustm.exe  AIARead.exe  AIAWrite.exe    Rev.  Issue Date
+           AIACustm.ini  AIARead.txt  AIAWrite.txt
+  -------  ------------  -----------  ------------    ----  ----------
+  1.02     6.0           1.0          1.0             01    2011/07/11
+  1.01     6.0           1.0          1.0             01    2011/04/22
+  1.00                                                01    2010/04/01
+
+  Note: Revision number (Rev.) is for administrative purpose of this README
+        document and is not related to software version. There is no need to
+        upgrade this software when the revision number changes.
+
+  To check the version of software, refer to the Determining which version is
+  installed section.
+
+
+Summary of Changes
+
+  Where: <   >        Package version number
+         [Important]  Important update
+         (New)        New function or enhancement
+         (Fix)        Correction to existing function
+
+<1.02>
+- (New) Added support for ThinkPad L430,L530,T430,T430i,T430s,T430si,T530,T530i,
+        W530,X1,X1 Carbon,X121e,X130e,X230,X230i,X230 Tablet,X230i Tablet.
+- (New) Added support for ThinkPad Edge E120,E125,E320,E325,E425,E525,S430.
+
+<1.01>
+- (New) Added support for ThinkPad L412,L420,L421,L512,L520,T420,T420i,T420s,
+        T420si,T510,T520,T520i,W520,X120e,X220,X220i,X220 Tablet,X220i Tablet.
+- (New) Added support for ThinkPad Edge 11",13",14",15",E10,E31,E40,E50,E220s,
+        E420,E420s,E520.
+- (Fix) The version number changed to package version.
+
+<1.00>
+- (New) Initial release.
+
+
+--------------------------------------------------------------------------------
+LIMITATIONS
+
+  Nothing.
+
+
+--------------------------------------------------------------------------------
+TRADEMARKS
+
+* Lenovo and ThinkPad are registered trademarks of Lenovo.
+
+Other company, product, and service names may be registered trademarks,
+trademarks or service marks of others.

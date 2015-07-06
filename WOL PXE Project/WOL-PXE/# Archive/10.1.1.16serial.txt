@@ -1,0 +1,1 @@
+%Failed to get value of SNMP variable. Variable does not exist (noSuchName(2))

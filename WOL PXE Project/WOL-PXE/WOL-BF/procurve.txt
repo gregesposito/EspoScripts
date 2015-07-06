@@ -1,0 +1,444 @@
+2524:
+
+
+ display            Display the running/saved configuration.
+ logout             Terminate this console/telnet session.
+ DEBUGIO            Redirects output from all printf()'s to the screen
+ FORCE_REDRAW       Forces the redraw of field labels in config screens
+ LABprototype       Change LAB Prototype status
+ MSGPoolshow        Dumps the MSG pool
+ PKTPoolshow        Dumps the PKT pool
+ BUFSHOW            Dumps a MSG or PKT buffer
+ PKTpoolStatsShow   Show the PKT pool allocation statistics
+ MSGpoolStatsShow   Show the MSG pool allocation statistics
+ CRASHData          Show crash information
+ LLshow             Detailed directory listing: llShow <filesystem (eg. /ramfs/
+ LSshow             Directory listing: lsShow <filesystem (eg. /ramfs/)>
+ I                  Task Info 
+ CHECKSTACK         checkStack() 
+ SEMSHOW            semShow(semid) - semaphore show
+ TASKSUSPEND        taskSuspend (taskId) - suspend a task
+ TASKRESUME         taskResume (taskId) - resume a suspended task
+ SVCINSTRSHOW       Show the SVC Instrumentation statistics
+ VERsion            Display firmware version stamp
+ ROMVERsion         Display ROM Version
+ BOOTCOUNTER        Number of times this switch has been powered up.
+ HReset             Hard Reset of the Switch
+ STREBOOT           Reboot to Benchmode
+ GETOS              GETOS <ipaddr> <remote-file>
+ UPDMAC             Update the MAC address (AABBCC-DDEEFF) : 
+ UPDMACNUM          Update the number of MAC addresses 
+ Read               Read memory: r [MOPT] <ADDR>
+ WR                 Write memory: w [MOPT] <ADDR> <VALUE>
+ FILL               Fill memory: fill [MOPT] <ADDR> <ADDR> <VALUE>
+ UPDSN              Update the Serial Number
+ UPDMFG             Update the specified manufacturing info
+ CLRMFG             Clear the specified manufacturing info
+ LED                Turn all possible LEDs [on|blink|off]
+ SMode              Set Memory Mode: sm [-l<READ_LENGTH> -b -h -w -a<bhw> -d<bh
+ SPECIAL            Special test for crc transmit bug
+special <on|off|run|crc>
+ NSRSHOW            Shows namespace statistic
+ NSSHOW             Shows namespace objects info
+ NSTASKSHOW         Show namespace info about tasks
+ nvfserase          Erase all files in filesystem
+ nvfsfill           Fill up the filesystem
+ S_CFG              Display Cage: s_cfg
+ UPGRADE            
+ DOWNGRADE          
+ CONFIGTest         Verify CLI generation/Xlate function
+ X_D                Xcvr Register Dump
+x_d <port number>
+ X_TYPE             Xcvr Type Identification.  For transceiver ports only.
+x_ty
+ C_R                Read the specifed Port Counters
+c_r <port number>
+ MAC_SHOW           Show learned MAC addresses
+mac_show [port number] [-n] [-s]
+                    
+ IHWMACtableshow    Display the Infinity MAC table refcount info
+ IHWPORTshow        Display the Infinity port state data
+ IHWTRUNKshow       Display the Infinity trunk state data
+ IHWVLANshow        Display the Infinity VLAN state data
+ SNIFfer            Set Sniffer Port: snif <sniffer port> <sniffed port> [sniff
+ ADDBRIDGE          Add Bridge MAC addresses
+ DELETEBRIDGE       Remove Bridge MAC addresses
+ DUMPCNTRS          Dump hardware counters.
+ PHYSHOW            Show Phy registers. Portnum.
+ PHYWRITE           PhyWrite. Enter w/o args for help.
+ PHYREAD            PhyWrite. Enter w/o args for help.
+ RSAGENSTATUS       Display key generator status
+ RSAGENSEM          Display key generator semaphore
+ RSATRACE           Display key generator status
+ RSAERRPRINT        Display key generator errors
+ SSHCounters        show context collision and double-exit counters
+ SSHLogLevel        Set log level <0-7>
+ syslogConfigShow   Display the syslog configuration
+ syslogStatsShow    Display syslog stats
+
+ exit               Return to the previous context or terminate current
+                    console/telnet session if you are in the Operator context
+                    level. 
+ show               Display switch operation information.
+
+2650:
+
+ logout                Terminate this console/telnet session.
+ DEBUGIO               Redirects output from all printf()'s to the screen
+ FORCE_REDRAW          Forces the redraw of field labels in config screens
+ LABprototype          Change LAB Prototype status
+ UPTIMESHOW            Shows time the switch has been up
+ DATAProtshow          Show information on all dataProt semaphores
+ MSGPoolshow           Dumps the MSG pool
+ PKTPoolshow           Dumps the PKT pool
+ BUFSHOW               Dumps a MSG or PKT buffer
+ PKTpoolStatsShow      Show the PKT pool allocation statistics
+ MSGpoolStatsShow      Show the MSG pool allocation statistics
+ PKTPoolDatashow       Dumps the PKT pool data
+ PKTpoolcrashifless    Crash if pkt pool goes below this
+ CRASHData             Show crash information
+ CRASHLogfileshow      Show all recorded crash records
+ CRASHLOGTest          Crash Log Test: crashLogTest -[b][i][I][s][f][a][o][u]b = Bus/Address
+                       Error, i = Infinite loop with tasks locked, I = HW watchdog resets =
+                       task Infinite loop, f = FATAL, a = ASSERTo = operation fault (illegal
+                       inst.) u = unaligned instr
+ CRASHLOGClear         Clear Crash Log: crashLogClear
+ EVENTLogfileshow      Show contents of the event log file
+ LLshow                Detailed directory listing: llShow <filesystem (eg.
+ LSshow                Directory listing: lsShow <filesystem (eg.
+ FS                    File system commands
+ SInfo                 Information on registered Servers
+ CSConninfo            Information on registered Client-Server connections
+ MEM_Rpt               Show memory usage info: mem_rpt [-d]
+ MEM_Chk               Check memory allocation data structures
+ MEM_Chk_Add           Turns on memory checking at task switch: mem_chk_add [-f]
+ MEM_Chk_Rem           Turns off memory checking
+ I                     Task Info
+ CHECKSTACK            checkStack()
+ SEMSHOW               semShow(semid) - semaphore show
+ TASKSUSPEND           taskSuspend (taskId) - suspend a task
+ TASKRESUME            taskResume (taskId) - resume a suspended task
+ SEMAllshow            Show information on all switch semaphores
+ EXCeption-ignore      Manage the exception list
+ DMACOUNTERSshow       Show DMA Driver counters
+ DMACLEARcounters      ClearDMA Driver counters
+ VERsion               Display firmware version stamp
+ ROMVERsion            Display ROM Version
+ SETTERM               set the terminal to vt100 or ASCII
+ BOOTCOUNTER           Number of times this switch has been powered up.
+ UPLINK                Select and configure the uplinks
+ HReset                Hard Reset of the Switch
+ STREBOOT              Reboot to Benchmode
+ GETOS                 GETOS <ipaddr> <remote-file>
+ UPDMAC                Update the MAC address (AABBCC-DDEEFF) :
+ UPDMACNUM             Update the number of MAC addresses
+ Read                  Read memory: r [MOPT] <ADDR>
+ WR                    Write memory: w [MOPT] <ADDR> <VALUE>
+ FILL                  Fill memory: fill [MOPT] <ADDR> <ADDR> <VALUE>
+ UPDSN                 Update the Serial Number
+ UPDMFG                Update the specified manufacturing info
+ CLRMFG                Clear the specified manufacturing info
+ LED                   Turn all possible LEDs [on|blink|off]
+ SMode                 Set Memory Mode: sm [-l<READ_LENGTH> -b -h -w -a<bhw> -d<bhw> -n -i -c
+                       -s] Set default memory operation modes (MOPT).
+ dType                 debug type set/clear
+ VALIDTASK_INFO        Display validation task info
+ PDSHOW                Show various PowerDsine information
+ PDPOWER               Set PowerDsine Power Supply Value
+ PDCAP                 Set PowerDsine Capacitor Detection
+ PDDISCON              Set PD33000 AC/DC Detection Mode
+ POE_PORT              Set user configurable port parameters.
+ POE_STATUS_PORT       Display port statistics and measurements.
+ POE_DEBUG             Change the POE Debug level.
+ POE_READ_EPS          Read from the specified EPS register.
+ POE_WRITE_EPS         Write to the specified EPS register.
+ POE_SLOT_UP           Enable a slot for POE functionality.
+ POE_START             Enable POE Mgr polling.
+ POE_STOP              Disable POE Mgr polling.
+ POE_EPS_TIMEOUT       Enable/Disable EPS timeout.
+ POE_EPS_COMM_INIT     Send the reset/init sequence to the I2C micro.
+ POE_PD_CHECK_ALIVE    Test to see if the Tweety PD is alive.
+ POE_PD_INIT           Hard init the PD unit.
+ POE_PD_FACTORY        Restore the PD unit to factory defaults.
+ POE_EPS_SIGNAL        Simulate and EPS Int.
+ POE_EPS_DEBUG         Enable/Disable EPS debug timeout.
+ CHASSISshow           Show various chassis information
+ S_CFG                 Display Cage: s_cfg
+ WATCHDOG              set watchdog parameters
+ MEMWATCH              set the wp
+ CHIPVER               Prints the Chip Versions
+ RPSset                Set a wanted RPS state
+ I2CREAD               Read from the specified PPC I2C device and register
+ I2CWRITE              Write to the specified PPC I2C device and register
+ UPGRADE               
+ DOWNGRADE             
+ VALIDTASK_SLAVEINFO   Display validation task slave side info
+ XCVRRECSHOWCMD        Print out Transceiver init info.
+ CONFIGTest            Verify CLI generation/Xlate function
+ P_BCNTRCLR            Clear all counters for unit/port
+ P_BCNTRCLRALL         Clear all counters in context.
+ DROPCOUNT             Online diag to get stacklink drop counts.
+ BCM                   Broadcom Debug: bcm <string for broadcom debugger>
+ UNIT_INIT             Recommended Usage: [slot <number(s)>] unit_init
+ UNIT_UPDATE           Recommended Usage: [slot <number(s)>] unit_update
+ UNIT_LINK             Checks link state of slot's ports
+ dsnoopShow            Display dsnoop configuration
+ DARPPShow             Display darpp configuration
+ DARPPEnable           Enable darpp global configuration
+ DARPPDisable          Disable darpp global configuration
+ PORTMapshow           Show the mapping between hardware/chip ports and software/logical
+                       ports
+ GAMSLAVEHWMCASTshow   Display gam slave mcast tables
+ GAMHWPORTshow         Display the gam slave port tables
+ GAMHWPROBEshow        Display the gam slave probe tables
+ GAMHWTRUNKshow        Display the gam slave trunk tables
+ GAMHWVLANshow         Display the gam slave vlan tables
+ GAMREFCNTMCASTshow    Display gam mcast reference counts
+ ADDRMGRHASH           Generate the hash index for a mac/vid
+ ADDRMGRMcastinfoshow  Display addrmgr info on multicast
+ ADDRMGRFilterinfos... Display addrmgr info on filters
+ ADDRMGRFEATURESinf... Display addrmgr info on features
+ ADDRMGRCOSinfoshow    Display addrmgr info on COS
+ ADDRMGRPORTSECurit... Display addrmgr info on port security
+ ADDRMGRTrunkinfoshow  Display addrmgr info on trunks
+ ADDRMGRMeshinfoshow   Display addrmgr info on meshs
+ ADDRMGRVlaninfoshow   Display addrmgr info on vlan
+ ADDRMGRPortinfoshow   Display addrmgr info on port
+ ADDRMGRProbeinfoshow  Display addrmgr info on probe port
+ ADDRMGRMOVEList       L2 move list
+ MACSlearnt            
+ DISABLE_LEARNS        disable all learns on the switch
+ ENABLE_LEARNS         enable learns again on the switch
+ ADDRMGRMASTERMACta... Display the master copy of MAC table
+ ADDRMGRSEARCHMacSu... Displays all addrs that match sub str
+ ADDRMGRMACTABLEInf... Displays MAC table counters
+ ADDRMGRHW_Learns      Display distribution of learns on HW
+ ADDRMGRCHECKaddrta... Check the software/hardware tables
+ GAMMCASTshow          Display the gamma mcast tables
+ GAMTRUNKshow          Display the gamma master trunk tables
+ GAMHWGROUPshow        Display the gamma mcast hwGroup table
+ SNIFfer               Set Sniffer Port: snif <sniffer port> <sniffed port> [sniffed port]
+                       ...
+ LACPAggregatorinfo... Display LACP info on Aggregators
+ LACPPortinfoshow      Display LACP info on Ports
+ LACPClearpducounters  Clear Rx and Tx PDU counters
+ LACPResourceCleaning  Remove port from trunk or remove trunk
+ PA                    PA <show|set|init> show [port-number] [counters] set [port-number]
+                       [disable|enable|var-name <int>] init [port-number] [counters]
+ PAS                   PAS <show|set|init> show [port-number] set [port-number]
+                       [disable|enable|var-name <int>] init [port-number]
+ PMGRTRKcfgshow        Displays the Trunk Cfg Information
+ PMGRPPtableshow       Displays the Physical Port table
+ PMGRPPtableshowAll    Displays all the Physical Port table
+ PMGRLPtableshow       Displays the Logical Port table
+ PMGRLPtableshowAll    Displays all the Logical Port table
+ PMGRTRUnktableshow    Displays the Trunk table
+ PMGRPOrtmapsshow      Displays all global PMGR port maps
+ LPMGRDisablelogica... Disable logical port for specified number of seconds
+ PORTSECShow           show port security info
+ ENABLEPCMDS           Enable the rest of the P-command set.
+ statistics            Shows internal statistics.
+ transceivers          Shows transceiver properties.
+ SNMPCounters          Shows all SNMP port counters.
+ DUMPCNTRS             Dump hardware counters.
+ NEGINIT               Init link logging
+ NEGLINK               Enable disable link logging
+ NEGFAULTS             Show neg faults
+ NEGLOSSLOG            Show neg faults
+ NEGLINKLOG            Show neg faults
+ NEGCLEARLOG           Clear link and loss logs
+ SPORTRECSHOW          Display PPMGR Slave Port Record: Sportrecshow [portNum].
+ BCMSCHANMEMERRCHKCMD  Check the count of s-chan errs.
+ DEAD_PHY_CHECK_CMD    Setup a dead phy situation - check FFI .
+ PHYSHOW               Show Phy/SFP/X2 registers.
+ PHYWRITE              PhyWrite.
+ PSP                   Suspends physical port manager and its monitor task.
+ FFSHOW                Show Fault Finder data structs
+ TRACESET              Enable tracing feature
+ HSTEST                Test ppmgr hotswap cleanup.
+ XCVRI2CWRITE          Testing transceiver i2c write capabilities.
+ XCVRI2CREAD           Testing transceiver i2c read capabilities.
+ XCVRI2CREADALL        Reading ALL i2c regs and banks!
+ GENDRVSLVREAD         Read the generic driver info for a port #.
+ VLANInfoshow          Information about all vlans
+ VLSCOUNTersshow       Show VLS counters
+ vlsClearCounters      Clear / Zero VLS counters
+ PORTVLANinfoshow      Information about vlan ports
+ PORTEGRESSlistshow    Information on Port Egress List
+ VOICEVLANShow         Information on voice vlan
+ TPVIDshow             List temporary Pvid Information
+ VLANAttrShow          List attributes for specified VLAN
+ IPAMTImesliceshow     Show information about ipAddrmgr time slice.
+ IPASShowtech          Show tech information for IP address manager slave
+ IPASRtblshow          Display ipAddrMgr Slave route descr table
+ IPASHTblshow          Display the ipv4 host table
+ IPASHStatsshow        Display ipAddrMgr host table stats.
+ IPASNtblshow          Display the network route table
+ IPSLAVEINTerfacema... Displays information about the interface manager.
+ IPSLAVEIPASICprofi... This command profiles the asic routines performance.
+ IPSLAVEASICUsageshow  Shows usage information for the routing ASIC.
+ IPSLAVEChangeverif... Changes the verification mode of the verifyHWSWTables() function.
+ ffpResourceCheck      Calculates the number of rules required for an L4 port range,
+                       <min><max>
+ IPASBcml3status       Shows current L3 hardware status
+ ACLListShow           Show the ACLs that are currently configured in hw
+ IPAMSHowtech          Show tech information for IP address manager master
+ IPAMExceptioncntshow  Display exception counters
+ IPAMRAdixtreeshow     Show the contents of the radix tree
+ IPAMRDTOtalshow       Show Route table total counts
+ IPAMRDCountshow       Route table cache entry counts for route
+ IPAMGENmsgstatsshow   Show IP Addr Mgr general message stats
+ IPAMMsgstatsshow      Show IP Addr Mgr message stats
+ IPAMSTATShow          Show IP Addr Mgr message stats
+ IPAMSTATReset         Reset IP Addr Mgr message stats
+ ARPshow               Display arp cache
+ arpFlush              Clear the arp cache
+ IPshow                Display switch ip tables
+ IPRATElimitshow       Display rate limiting statistics for ICMP and broadcast forwarding
+ IPROUTELEAKshow       Display route redistribution config info
+ ipStaticOffListShow   Disply contents of static off list.
+ IFshow                Display the attached IP network interfaces
+ ICMPSTATshow          Display statistics for ICMP
+ INETSTATshow          Display active connections for IP sockets
+ IPSTATshow            Display IP BSD statistics
+ IPHPStatshow          Show more ip routing stats.
+ MBUFshow              Display mbuf statistics
+ NETDPOOLshow          Display data sys pool status
+ NETSYSPOOLshow        Display net sys pool status
+ TCPSTATshow           Display all statistics for the TCP protocol
+ UDPSTATshow           Display statistics for the UDP protocol
+ ROUTEshow             Display host and network routing tables
+ ROUTEWALKshow         Display active IP routing table
+ routeWalkStatsShow    Display statistics about routes in the Patricia tree.
+ ROUTEWALKshowwithARP  Disply active IP routing table including ARP entries.
+ ROUTEWALKALLshow      Display full IP routing table
+ routeWalkFilterShow   Display all routes in table that match specified mask & key.
+ ROUTEMEMshow          Display routing table memory statistics
+ ARPTABshow            ARP Tab show
+ RAWPCBshow            RAW pcb show
+ MULTIADD              Add multinet addr: <cmd> <vlan> <addr> <mask>
+ MULTIDEL              Delete multinet addr: <cmd> <vlan> <addr>
+ MULTIShow             Show multinet addr(s): <cmd> [<vlan>]
+ ACLAddDipld           configure a DIPLD ACL in hw
+ ACLRemoveDipld        remove a DIPLD ACL from hw
+ ACLTimerSet           set the acl logging timer (mSec)
+ IGMPTimershow         Information about all IP multicast group timers
+ IGMPVlanshow          Information about IGMP VLAN information
+ IGMPCountershow       Information about IGMP counters
+ DHCPCOUNTERSshow      Display dhcp counters
+ UDPFSTATINFO          Display the Counters for UDP Forwarding and DHCP Relay Agent.
+ RSAGENSTATUS          Display key generator status
+ RSAGENSEM             Display key generator semaphore
+ RSATRACE              Display key generator status
+ RSAERRPRINT           Display key generator errors
+ SSHCtxtlist           Display complete context list
+ SSHFdsetShow          Display ssh fd_set queues
+ SSHLogLevel           Set log level <0-7>
+ SSHSessionDump        Display session data
+ SSHVersionString      Set version string
+ httpShowSocketPool    Display HTTP socket pool
+ httpdatatest          Uncompress HTML data and show
+ httpauthtest          Send fake auth done message
+ SSLDEFAULT            set SSL to out-of-box defaults
+ SSLSHOW               Show SSL mib object values
+ SSLMIBTEST            Test SSL MIB
+ CERTMIBTEST           Test Cert MIB
+ SSLDATA               Show SSL PCB data structure
+ SSLCERT               Show SSL certificate
+ SSLCAREQSHOW          Show CA request
+ CERTCREATE            Create new certificate with dummy fields
+ CERTSHOW              Show current certificate in memory
+ CERTFLASHSHOW         Show saved certificate in flash (PEM bytes)
+ CERTKEYCREATE         Create certificate key and save to flash
+ CERTKEYFLASHSHOW      Show saved certificate private key in flash
+ CERTNEWCERTMIBSHOW    Show contents of new cert mib object
+ GStateDisplay         Displays the garp state of the port
+ GVRPPConfig           GVRP Port Configuration (Learn/Block/Disable)
+ GVRPPState            GVRP Port State (RegState - Fixed/No/Normal)
+ GVRPSTat              GVRP Statistics
+ RSTPPortinfoshow      Display Rapid STP info on Ports
+ RSTPBridgeinfoshow    Display Rapid STP info on Bridge
+ RSTPRootHistoryShow   Display Root Change history known on the Bridge
+ RSTPDetBridgeShow     Display detailed statistics info for the Bridge
+ RSTPDetPortShow       Display detailed statistics info for the port
+ RSTPClrDetBridgeShow  Clear Bridge's detailed statistics counters
+ RSTPClrDetPortShow    Clear Port's detailed statistics counters
+ RSTPFlushholdshow     Display flush hold timer info
+ RSTPFlushholdset      Set l2 and l3 flush hold timer
+ LOOPPROTECTshow       show internal loop protect information
+ RDISCshow             Display router discovery status
+ RDISCsendbcastsoli... Send a broadcast router solicit
+ RDISCsendmcastsoli... Send a multicast router solicit
+ rdiscTxTraceEnable    Enable display of pkts Tx by RDISC
+ rdiscTxTraceDisable   Disable display of pkts Tx by RDISC
+ rdiscRxTraceEnable    Enable display of pkts Rx by RDISC
+ rdiscRxTraceDisable   Disable display of pkts Rx by RDISC
+ idmAclShow            Show IDM ACLs.
+ wmatraceenable        Enable debug tracing options
+ wmatracedisable       Enable debug tracing options
+ webmacauthdefault     Clear web and MAC auth config records (all ports)
+ macauthstart          Start MAC Auth
+ macauthConfigshow     Show MAC auth config
+ macauthstatusshow     Show MAC Auth status
+ LWIPSTATS             LWIP TCP/IP stack status
+ wmaDhcpShow           Show DHCP server status
+ autzShow              Display Authorization info (use "help" to see all cmds)
+ syslogConfigShow      Display the syslog configuration
+ syslogStatsShow       Display syslog stats
+ mlshow                Display mac lockdown and lockout info
+ cdp_show              Show cdp packet information
+ lldpShow              Show lldp information
+ lldpRecordsClear      clear lldp neighbor information
+ lldpClearCounters     clear lldp rx and tx counters
+ sntp_show             Show recent sntp status
+
+ boot                  Reboot the device.
+ clear                 Clear table/statistics or authorized client public keys.
+ configure             Enter the Configuration context.
+ copy                  Copy datafiles to/from the switch.
+ debug                 Enable/disable debug logging.
+ end                   Return to the Manager Exec context.
+ erase                 Erase the configuration file stored in flash or the primary/secondary
+                       flash image.
+ getMIB                Retrieve and display the value of the MIB objects specified.
+ kill                  Kill other active console, telnet, or ssh sessions.
+ log                   Display log events.
+ page                  Toggle paging mode.
+ print                 Execute a command and redirect its output to the device channel for
+                       current session.
+ redo                  Re-execute a command from history.
+ reload                Warm reboot of the switch.
+ repeat                Repeat execution of a previous command.
+ setMIB                Set the value of a MIB object.
+ setup                 Enter the 'Switch Setup' screen for basic switch configuration.
+ telnet                Initiate an outbound telnet session to another network device.
+ terminal              Set the dimensions of the terminal window.
+ update                Enter Monitor ROM Console.
+ walkMIB               Walk through all instances of the object specified displaying the MIB
+                       object names, instances and values.
+ write                 View or save the running configuration of the switch.
+
+ enable                Enter the Manager Exec context.
+ exit                  Return to the previous context or terminate current console/telnet
+                       session if you are in the Operator context level.
+ link-test             Test the connection to a MAC address on the LAN.
+ logout                Terminate this console/telnet session.
+ menu                  Change console user interface to menu system.
+ ping                  Send IP Ping requests to a device on the network.
+ show                  Display switch operation information.
+ traceroute            Send traceroute to a device on the network.
+
+5400zl:
+
+ATTENTION: You are entering a diagnostic mode on this product that is HP
+Confidential and Proprietary. This mode, the commands and functionality
+specific to this mode, and all output from this mode are HP Confidential
+and Proprietary. You may use this mode only by specific permission of, and
+under the direction of, an HP support engineer or HP technical engineer.
+Unauthorized or improper use of this mode will be considered by HP to be
+unauthorized modification of the product, and any resulting defects or
+issues are not eligible for coverage under the HP product warranty or any
+HP support or service.  UNAUTHORIZED OR IMPROPER USE OF THIS MODE CAN
+MAKE THE PRODUCT COMPLETELY INOPERABLE.
+
+

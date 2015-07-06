@@ -1,0 +1,1 @@
+Run the .bat file to execute pin task bar script 

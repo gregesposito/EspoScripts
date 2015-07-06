@@ -1,0 +1,575 @@
+    CHKCPU32
+    09/09/2012
+    by Jan Steunebrink
+
+    Homepage: http://web.inter.nl.net/hcc/J.Steunebrink/
+    E-mail  : J.Steunebrink@net.HCC.nl
+
+    CPU Identification utility v2.10
+    --------------------------------
+
+Introduction
+------------
+After a CPU and/or motherboard upgrade, it can be difficult to find the
+correct motherboard or BIOS settings for clockspeed and clock multiplier.
+I wrote the CHKCPU32 utility to have an easy check on these settings.
+On the other hand, CHKCPU32 is also useful for checking the CPU details on
+a given machine. Due to its text-based or XML output, information from CHKCPU32
+can easily be used to get CPU info from each machine in a network by calling
+CHKCPU32 from the network log-on script or via a remote execution tool.
+
+The program
+-----------
+The program comes in a ZIP-file (CKCPU210.ZIP) which should contain the
+following 3 files: CHKCPU32.BAT  ;a batch file for easy use of the program
+                   CHKCPU32.EXE  ;the program
+                   CHKCPU32.TXT  ;this text file.
+The files have a date-time stamp of 09/09/12 - 2:10 am.
+The program is written in assembly language and it is freeware.
+
+The CHKCPU32.EXE executable is a true Win32 console mode program. This
+32-bit Windows version is the successor of the previous 16-bit DOS version.
+
+CHKCPU32 is designed to run in the command window of any 32/64-bit Windows
+version (Win95 or higher). Because CHKCPU32 is a true Windows program, it
+doesn't suffer from the limitations of the previous 16-bit DOS version when
+run under Windows. Especially under WinNT4 and later Windows versions, CHKCPU32
+gives a better speed indication accuracy than the 16-bit CHKCPU.
+In addition, CHKCPU32 can display the number of CPUs and Cores in a system.
+
+To have a quick check on the CPU details, without opening a command window and
+typing the required commands, unzip the CHKCPU32.BAT and CHKCPU32.EXE files in
+a folder and double-click on the CHKCPU32.BAT file in explorer.
+
+
+CHKCPU32 output examples
+------------------------
+On my Celeron M laptop, running Windows Vista, CHKCPU32 shows:
+
+ CPU Identification utility v2.10                 (c) 1997-2012 Jan Steunebrink
+ ------------------------------------------------------------------------------
+ CPU Vendor and Model: Intel Celeron M 410/420/423/430 C0-step
+ Internal CPU speed  : 1729.0 MHz
+ System CPU count    : 1 Physical CPU(s), 1 Core(s) per CPU, 1 Thread(s)
+ CPU-ID Vendor string: GenuineIntel
+ CPU-ID Name string  : Intel(R) Celeron(R) M CPU        430  @ 1.73GHz
+ CPU-ID Signature    : 0006E8
+                       |||||+- Stepping or sub-model no.
+                       ||||+- Model: Indicates CPU Model and 486 L1 cache mode
+                       |||+- Family: 4=486, Am5x86, Cx5x86
+                       |||           5=Pentium, Cx6x86, K5/K6, C6, mP6
+                       |||           6=PentiumPro/II/III, CxMII/III, Athlon, C3
+                       |||           F=Pentium4, Athlon64
+                       ||+- Type: 0=Standard, 1=Overdrive, 2=2nd Dual Pentium
+                       |+- Ext. Model: Extends the Base Model to an 8-bit value
+                       +- Ext. Family: Extends the Base Family value
+
+Apart from this 'Normal' display, CHKCPU32 supports command-line switches
+to get another format or to display additional CPU information.
+You can get a list of these switches with the command CHKCPU32 /? or /H
+The following switches are supported:
+- With CHKCPU32 /C you get the CPUID only mode. In this mode, any code that
+  does more than CPUID data processing, like speed measurement, is skipped.
+  So this mode works like a safe detection mode and can be used for
+  troubleshooting problems when using CHKCPU32.
+- With CHKCPU32 /D you get the Debug mode. It displays a dump of raw OS and
+  relevant CPUID level information. Great for troubleshooting "Unknown"
+  indications or getting info on new CPU models.
+- With CHKCPU32 /F you get the Frequency mode. It displays the CPU Speed only.
+  Intended for use in scripts. The output is in MHz but has no trailing 'MHz'.
+- With CHKCPU32 /S you get a Short display of CPU Type and Speed only.
+  Intended for use in network logon scripts. The output has no trailing CR.
+- With CHKCPU32 /V you get the Verbose mode. It displays additional CPUID info
+  like CPU features, Instruction set extensions, and the sizes of the L1 and
+  integrated L2/L3 cache.
+  Some CPU features are only displayed for specific CPUs. These are:
+   'CPU Serial Number Enabled' for the PentiumIII,
+   'Hyper-Threading technology', 'Execute Disable protection', '64-bit support'
+   and 'Virtualization Technology' for the Pentium 4, Core (2), Athlon 64 and
+   later models.
+  The Instruction set extensions line displays if MMX, 3DNow, SSE, SSE2, SSE3,
+  SSSE3, SSE4.1, SSE4.2, and SSE4A support is present.
+   Note that only supported instruction sets are displayed.
+  For CPUs with split Data/Instruction L1 caches, the combined value is shown.
+  On Multi-Core CPUs, the sizes of the L1 and L2 cache are indicated for each
+  core and the number of caches per CPU package is indicated as well.
+   Note that when a combined L2 cache is used by the CPU in question, the nbr
+   of L2 caches present is less than the nbr of cores.
+  A L3 cache, if present, is usually a single combined cache.
+- With CHKCPU32 /X you get the XML mode. It displays CPU details in XML format.
+  Intended for easy parsing of specific CPU data for use in another program.
+  Most members in the XML output contain text strings. Exceptions are the
+  <cpu_speed>, <physical_cpus>, <cores>, and <threads> members that contain
+  decimal numbers and the <cpuid_sign> member that contains a hex number.
+  In addition, all members that indicate a CPU feature or instruction set
+  extension, like <htt>, <_64bit>, <mmx>, display only a single binary number.
+  A '1' if the function is supported and a '0' if it is not.
+
+Switches can be combined. Example: CHKCPU32 /S /C gives a short display of
+the CPU type only. The speed is not displayed.
+The /D switch has priority over the /V switch, the /S switch has priority over
+the /D and /V switches, the /F switch has priority over the /S, /D, and /V
+switches, the X switch has priority over the /F, /S, /D, and /V switches, and
+the /H or /? switch has priority over all other switches.
+
+CHKCPU32 /V under Windows 7 64-bit on my AMD Desktop box looks like:
+
+ CPU Identification utility v2.10                 (c) 1997-2012 Jan Steunebrink
+ ------------------------------------------------------------------------------
+ CPU Vendor and Model: AMD FX 8-Core series B2-rev.
+ Internal CPU speed  : 3110.4 MHz
+ System CPU count    : 1 Physical CPU(s), 8 Core(s) per CPU, 8 Thread(s)
+ CPU-ID Vendor string: AuthenticAMD
+ CPU-ID Name string  : AMD FX(tm)-8120 Eight-Core Processor           
+ CPU-ID Signature    : 600F12
+ CPU Features        : Floating-Point Unit on chip  : Yes
+                       Time Stamp Counter           : Yes
+                       Cool'n'Quiet support         : Yes
+                       Hyper-Threading Technology   : No
+                       Execute Disable protection   : Yes
+                       64-bit support               : Yes
+                       Virtualization Technology    : Yes
+ Instr set extensions: MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, SSE4A
+ Size of L1 cache    : 8 x 48 KB
+ Integrated L2 cache : 4 x 2048 KB
+ Integrated L3 cache : 8192 KB
+
+CHKCPU32 is meant to be used on 586/Pentium or higher CPUs only. CPUs which
+do not know the CPUID instruction are not supported by CHKCPU32.
+In addition, CHKCPU32 relies solely on the TSC for CPU speed measurement.
+CHKCPU32 recognizes CPUs from Intel, AMD, Cyrix/IBM, IDT, VIA, Rise,
+and Transmeta.
+
+
+Clock multiplier and CPU speed
+------------------------------
+Since the Intel 486DX2 hit the market, most CPUs run internally faster
+than externally.
+The Internal CPU speed display indicates the true internal CPU clock speed.
+The internal CPU clock speed = Bus clock X Clock multiplier.
+The Bus clock is the speed of the motherboard clock.
+On Pentium class CPUs, the clock multiplier is usually selectable in steps
+of 0.5 (x1.5, x2, x2.5, x3 etc.).
+Some CPUs have a fixed multiplier factor (Celeron, PentiumIII/4), and some
+use fractional factors like x1.75 (K5) or x2.33 (Winchip-2A).
+Modern CPUs (Athlon64/Pentium4) use whole numbers as multiplier factor.
+
+For Intel CPUs the internal speed equals the rating. So a Pentium 200 will
+run internally at 200 MHz. (66.6 x 3)
+For AMD, Cyrix, and Rise CPUs the internal speed can be lower than the PR
+rating due newer and more efficient design.
+For the K6-2 and later AMD CPUs upto 1400MHz, the internal speed equals the
+rating but modern CPUs use a performance figure as rating.
+
+CHKCPU32 measures the CPU speed by accurately timing the increment of the
+CPU's internal Time Stamp Counter (TSC). As a timebase, the Windows own
+PerformanceCounter is used which in turn is based on one of the motherboard's
+hardware timers.
+Under Windows there is always a chance of a Task-switch, and if this occurs
+during CPU speed measurement, the result would be highly inaccurate.
+To ensure an accurate speed reading, CHKCPU32 uses a short as possible
+timebase interval and re-starts the speed measurement from scratch if a
+Task-switch does occur during that time interval.
+This retry is allowed for up to ten times, to maximize the chances on a good
+speed measurement.
+
+
+Other display details
+---------------------
+The 'System CPU count' display indicates the hardware topology of enabled
+logical processors in the system on 3 levels:
+ 1) Number of physical CPU packages
+ 2) Number of Cores per CPU package
+ 3) Total number of logical processors (=Threads).
+Without Hyper-Threading, the number of logical processors is equal to the
+number of Cores per CPU times the number of physical CPU packages.
+But with Hyper-Threading enabled, the indicated number of logical processors
+is double the number of physical cores in a system.
+
+The CPU-ID Name string is only displayed when supported by the CPU.
+This name string is stored in the CPU and is usually programmed into the CPU
+by the manufacturer or by the BIOS at boottime.
+
+
+Error and Unknown messages
+--------------------------
+If CHKCPU32 is unable to detect the CPU Vendor you get an "Unknown" indication.
+If CHKCPU32 is unable to detect the CPU Model you'll see -Unknown model-.
+"Unknown" indications are also possible if CHKCPU32 is unable to detect the
+L1, L2, or L3 cache size.
+
+When CHKCPU32 detects a CPU without CPUID support, you will see:
+ ERROR: This CPU is not supported by CHKCPU32. Use CHKCPU instead.
+Note: If the /s or /f option is used, you only see: No CPUID
+and if the /x option is used, the <cpuid_sign> member is zero, and all other
+XML members showing CPU details are absent.
+
+When CHKCPU32 detects a CPU with CPUID but without TSC support, you will see:
+ Internal CPU speed  :  Unable to measure; No TSC
+Note: If the /s or /f option is used, you only see: No TSC
+and if the /x option is used, the <cpu_speed> member is zero.
+
+If the speed measurement is aborted due very frequent Task-switching, you will
+see: Internal CPU speed  : * Measurement unreliable due Task-switching *
+Note: if the /x option is used, the <cpu_speed> member is zero in this case.
+
+
+Acknowledgments
+---------------
+I could not have written this program without the hard work of these people:
+- Christian Ludloff http://www.sandpile.org/ for his unsurpassed amount and
+  detail of CPU information.
+- Grzegorz Mazur http://grafi.ii.pw.edu.pl/gbm/x86/ for publishing the basic
+  algorithms for CPU detection.
+- Frank van Gilluwe, author of "The Undocumented PC" (second edition); still
+  my favorite hardware book.
+- Steve Hutchesson http://www.masm32.com for providing the MASM32 package.
+  This Win32 MASM package is used for writing and building Chkcpu32.exe.
+
+
+Feedback requested
+------------------
+If you encounter an "Unknown" message or if you have any questions regarding
+this program, please send me an E-mail with your CPU details and
+the CHKCPU32 /V and CHKCPU32 /D outputs.
+You can use the redirect and append functions to get the outputs in a file.
+E.g. CHKCPU32 /V > MYCPU32.TXT and CHKCPU32 /D >> MYCPU32.TXT
+
+J.Steunebrink@net.HCC.nl
+
+------------------------------------------------------------------------------
+Chkcpu32 revision history:
+
+Version 2.10
+09/09/2012
+- Updated the CPU data for these new models:
+  . AMD:
+    - Opteron Quad/Eight-Core 3200-series (Zurich),
+    - A8-5500/A8-5600K/A10-5700/A10-5800K Quad-Core APU for Desktop (Trinity),
+    - A4-5300/A6-5400K Dual-Core APU for Desktop (Trinity),
+    - A8-4500M/A10-4600M/A10-4655M Quad-Core APU for Notebooks (Trinity),
+    - A4-4300M/A6-4400M/A6-4455M Dual-Core APU for Notebooks (Trinity),
+    - E1-1200/E2-1800 Dual-Core APU (Zacate),
+    - Phenom II X4 650T/840T/960T/970BE E0-step (Zosma),
+    - Phenom II X4 970/975/980 C3-step (Deneb),
+    - Athlon II X4 615e/620e/645/650 C3-step,
+    - Athlon II X4 638/641 (for FM1 socket),
+    - Athlon II X3 420e/450/455/460 C3-step,
+    - Athlon II X2 270u/265/B28 C3-step,
+    - Phenom II X4 Mobile N950/N970/P940/P960/X940 (Champlain),
+    - Phenom II X3 Mobile N850/N870/P840/P860 (Champlain),
+    - Phenom II X2 Mobile N640/N660/P650 (Champlain),
+    - Athlon II X2 Mobile N350/N370/P340/P360 (Champlain),
+    - Turion II X2 Mobile M560 (Caspian),
+    - Turion II X2 Neo Mobile K645/K685 C3-step,
+    - Athlon II X2 Mobile M360 (Caspian),
+    - Athlon II Neo Mobile K145/K345 C3-step,
+    - V-series Mobile V140/V160 C3-step,
+    - Sempron 130/145/150 C3-step,
+    - Sempron (Mobile) 130/M140 C2-step,
+    - Turion X2 Ultra ZM-87 B1-step,
+    - Athlon Mobile QI-46 B1-step.
+  . Intel:
+    - Xeon Quad/Six/Eight-Core E5-1400/1600/2400/2600/4600 Family,
+    - Xeon Dual/Quad-Core E3-1200V2 Family (Ivy Bridge),
+    - Core i7 Quad/Six-Core i7-3820/3930K/3960X C2-step (Sandy Bridge-E),
+    - Core i7 Quad-Core i7-3770/3770K/3770S/3770T E1-step (Ivy Bridge),
+    - Core i7 Quad-Core Mobile i7-3600Q/3700Q/3800Q/3900X series (Ivy Bridge),
+    - Core i7 Dual-Core Mobile i7-3500M(U)/3600U series (Ivy Bridge),
+    - Core i5 Quad-Core i5-3300/3400/3500 series (Ivy Bridge),
+    - Core i5 Dual-Core (Mobile) i5-3200M/3300M/3400 series (Ivy Bridge),
+    - Core i3 Dual-Core (Mobile) i3-3100M/3200 series (Ivy Bridge),
+    - Pentium Dual-Core G2100 series (Ivy Bridge),
+    - Celeron G465 (Sandy Bridge),
+    - Atom Dual-Core D2550/N2600/N2800 (Cedarview).
+- Rewritten the CPU count algorithm to get a reliable CPU topology enumeration
+  also in cases where Hyper Threading or one or more CPU cores are disabled.
+- Made the program 64-bit Windows aware to make use of additional CPU Topology
+  support of 64-bit Windows and to allow detection of more than 32 logical
+  processors under 64-bit Windows.
+- Fixed the L1 and L2 cache count on AMD Family 15h CPUs (Bulldozer).
+- Fixed the L2 cache size display on VIA Samuel 2 and Ezra(-T) CPUs.
+- Fixed the combination of the /C with the /X switch. In this Chkcpu32 /X/C
+  case, speed measurement is now skipped and the <cpu_speed> member is zero.
+- Changed the CPU speed measurement error handling in XML mode. If a timer
+  error is detected in XML mode, the <cpu_speed> member is set to zero to flag
+  the error, instead of displaying an error message like in normal mode.
+- Added Windows 32-bit or 64-bit version information to the Debug display.
+- Added APIC-IDs of the first 32 logical processor to the Debug display.
+- Expanded the Debug display with (AMD) CPUID levels 8000001Dh and 8000001Eh.
+
+Version 2.09
+02/02/2012
+- Updated the CPU data for these new models:
+  . AMD:
+    - Opteron 4/8/12/16-Core 6200-series (Interlagos),
+    - Opteron Six/Eight-Core 4200-series (Valencia),
+    - Opteron Eight/Twelve-Core 6140/6180,
+    - FX 4/6/8-Core series (Buldozer/Zambezi),
+    - Phenom II X6 1035T/1045T/1065T/1075T/1100T-BE,
+    - Phenom II X2 560/565/570,
+    - Athlon II X4 631/651 (for FM1 socket),
+    - A6-3600 series/A8-3800 series Quad-Core APU,
+    - A6-3500 Triple-Core APU,
+    - E2-3200/A4-3300/A4-3400 Dual-Core APU,
+    - A6-3400M series/A8-3500M series Mobile Quad-Core APU,
+    - E2-3000M/A4-3300M series Mobile Dual-Core APU,
+    - E-series Single- and Dual-Core APU,
+    - C-series Single- and Dual-Core APU.
+  . Intel:
+    - Xeon Six/Eight/Ten-Core E7-2800/4800/8800 Family,
+    - Core i7 Six-Core i7-3930K/3960X (Sandy Bridge-E),
+    - Core i7 Six-Core i7-980/990X,
+    - Core i7 Quad-Core i7-2600/2600K/2600S/2700K,
+    - Core i7 Quad-Core Mobile i7-2600Q/2700Q/2800Q/2900X series,
+    - Core i7 Dual-Core Mobile i7-2600M series,
+    - Core i5 Quad-Core i5-2300/2400/2500 series,
+    - Core i5 Dual-Core Mobile i5-2400M/2500M series,
+    - Core i3 Dual-Core i3-2100 series,
+    - Core i3 Dual-Core Mobile i3-2300M series,
+    - Core i7 Dual-Core Mobile i7-620LM/640M/660LM/680UM K0-step,
+    - Core i5 Dual-Core i5-650/660/661 K0-step,
+    - Core i5 Dual-Core Mobile i5-460M/470UM/480M/560UM/560M/580M K0-step,
+    - Core i3 Dual-Core Mobile i3-330M/380UM/380M/390M K0-step,
+    - Pentium Dual-Core G6960 K0-step and G600/G800 series,
+    - Pentium Dual-Core Mobile U5600/P6100/P6200/P6300 and B900 series,
+    - Celeron Dual-Core G500 series and Mobile B800 series,
+    - Celeron Dual-Core Mobile U3405/U3600/P4500/P4505/P4600 K0-step,
+    - Celeron G440/G460 and Mobile 787/797/B710/B720,
+    - Atom Dual-Core N570/D2500/D2700,
+    - Atom Z600/Z615/Z625/Z650/Z670.
+- Updated the L1 cache data for Intel CPUs.
+- Expanded the L1, L2, and L3 cache size detection to use CPUID Level 4 data
+  on newer Intel models. Sandy Bridge and later series don't provide cache
+  descriptors via CPUID Level 2 anymore, but use Level 4 parameters instead.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.21 has the same update status as CHKCPU32 v2.09 and uses the same
+  CPU model data.
+
+Version 2.08
+09/09/2010
+- Updated the CPU data for these new models:
+  . AMD:
+    - Opteron Six-Core 4162/4164/4170/4174/4176/4180/4184,
+    - Opteron Quad-Core 4122/4130,
+    - Phenom II X6 1055T/1090T-BE,
+    - Athlon II X4 605e/610e/630/635/640,
+    - Athlon II X3 405e/415e/435/440/445,
+    - Athlon II X2 260u/215/240e/245(e)/250/255/260,
+    - Athlon X2 5000+,
+    - Phenom II X4 Mobile P920/N930/X920-BE,
+    - Phenom II X3 Mobile P820/N830,
+    - Phenom II X2 Mobile N620/X620-BE,
+    - Turion II X2 Mobile P520/N530,
+    - Turion II X2 Neo Mobile K625/K665,
+    - Athlon II X2 Mobile P320/N330,
+    - Athlon II Neo Mobile K125/K325,
+    - Athlon V Mobile V105/V120.
+  . Intel:
+    - Xeon Octa-Core X6550/L7555/X7550/X7560, 
+    - Xeon Six-Core W3680/L5638/L5640/E5645/X5650/X5660/X5680/E6540/
+                    E7530/E7540/L7545/X7542,
+    - Xeon Quad-Core X3480/W5590/L5609/L5618/L5630/E6510/E7520, 
+    - Xeon Dual-Core E5503,
+    - Core i7 Six-Core i7-970,
+    - Core i7 Quad-Core i7-870S/875K/880,
+    - Core i7 Quad-Core Mobile i7-740QM/840QM/940XM,
+    - Core i7 Dual-Core Mobile i7-620M/660UE/660UM,
+    - Core i5 Quad-Core i5-760,
+    - Core i5 Dual-Core i5-655K/680,
+    - Core i5 Dual-Core Mobile i5-430UM/450M/520E/520M/540UM/540M,
+    - Core i3 Dual-Core i3-530/540/550/560,
+    - Core i3 Dual-Core Mobile i3-330E/330UM/350M/370M,
+    - Pentium Dual-Core E5500/E6700,
+    - Pentium Dual-Core Mobile P6000/U5400,
+    - Celeron Dual-Core E3500,
+    - Celeron Dual-Core Mobile P4500/P4505/U3400,
+    - Atom Dual-Core D525/N550, Atom D425/N455/N475/Z560.
+- Removed the display for SSE5 support, because AMD dropped this function.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.20 has the same update status as CHKCPU32 v2.08 and uses the same
+  CPU model data.
+
+Version 2.07
+04/04/2010
+- Updated the CPU data for these new models:
+  . AMD:
+    - Opteron Twelve-Core 6164/6168/6172/6174/6176
+    - Opteron Eight-Core 6124/6128/6134/6136
+    - Phenom II X4 820/910/925/945/955/965/B93/B95,
+    - Phenom II X3 B73/B75,
+    - Phenom II X2 545/550/555/B53/B55,
+    - Athlon II X4 635, Athlon II X3 440,
+    - Athlon II X2 250u/260u/235/255/B22/B24,
+    - Turion II X2 Mobile M540/M660,
+    - Athlon II X2 Mobile M340,
+    - Sempron Mobile M120.
+  . Intel:
+    - Xeon Quad/Six-Core E5620/E5630/E5640/X5667/X5670/X5677, 
+    - Xeon Dual-Core L3406,
+    - Core i7 Six-Core i7-980X,
+    - Core i7 Quad-Core i7-860S/930/960,
+    - Core i7 Dual-Core Mobile i7-610E/620LE/620(L)M/640(L)M,
+    - Core i5 Quad-Core i5-750S,
+    - Core i5 Dual-Core i5-650/660/661/670,
+    - Core i5 Dual-Core Mobile i5-430M/520M/540M,
+    - Core i3 Dual-Core i3-530/540,
+    - Core i3 Dual-Core Mobile i3-330M/350M,
+    - Core 2 Quad Q9505,
+    - Pentium Dual-Core E2210/E6600/G6950,
+    - Pentium Dual-Core Mobile T4300/T4400,
+    - Celeron Dual-Core E3400/T3000/T3100/T3300,
+    - Celeron 220,
+    - Celeron Mobile M570,
+    - Atom Dual-Core D510, Atom D410/N450/N470.
+  . VIA:
+    - Nano U1700/U2225/U2250.
+- Fixed the Core i7 Quad Mobile 720QM/820QM/920XM detection.
+- Changed the XML output to show the full CPU Model data including CPU stepping,
+  via the <cpu_model> member.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.19 has the same update status as CHKCPU32 v2.07 and uses the same
+  CPU model data.
+
+Version 2.06
+10/10/2009
+- Updated the CPU data for new AMD Opteron Six-Core, Phenom II X4, Athlon II X4,
+  Athlon II X3, Athlon II X2, Turion II X2 Ultra, Turion II X2, Turion X2 Ultra,
+  Athlon II X2 Mobile, Turion Neo X2, Athlon Neo X2, and Sempron models,
+  and new Intel Xeon Quad-Core, Core i7 Quad, Core i5 Quad, Core i7 Mobile,
+  Pentium Dual-Core, Celeron Dual-Core, and Atom models.
+- Corrected the AMD Opteron Six-Core recognition and improved support for
+  Opteron Dual-Core models.
+- Fixed the mobile AMD Athlon XP-M 2800+/3000+ (socket 754) detection.
+- Added file version information to the Chkcpu32.exe file properties
+- Fixed a syntax bug in the XML output (3DNow! and 64-bit members).
+- Added XML output of SSSE3, SSE4.1, SSE4.2, SSE4A (AMD), and SSE5 (AMD)
+  instruction set extension support.
+- Added XML output of the L1, L2, and L3 cache data.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.18 has the same update status as CHKCPU32 v2.06 and uses the same
+  CPU model data.
+
+Version 2.05
+07/07/2009
+- Updated the CPU data for new AMD Opteron Six-Core, Opteron Quad-Core,
+  Phenom II X4/X3, Phenom II X2, Athlon II X2, and Sempron models,
+  new Intel Xeon 5500 series, Core i7 Quad, Core 2 Duo, Pentium Dual-Core,
+  Atom, and Celeron models, and new VIA Nano models.
+- Added logic to distinguish Dual-Core from Triple-Core from Quad-Core CPU
+  models, which share the same CPU-ID signature.
+- Made the CPU speed determination more robust, to avoid hanging the speed
+  measurement in a loop on a heavily loaded system.
+- Expanded information on the number of CPUs in a system. Hardware topology
+  of enabled logical processors in the system is now indicated on 3 levels:
+  1) Number of physical CPU packages
+  2) Number of Cores per CPU package
+  3) Total number of logical processors (=Threads).
+- Added display of Enhanced Intel SpeedStep or AMD Cool'n'Quiet support.
+- Combined the CPU Features display of Instruction set extensions like MMX,
+  3DNow!, and SSE/SSE2/SSE3 into a single and separate display line.
+- Added indication of SSSE3, SSE4.1, SSE4.2, SSE4A (AMD), and SSE5 (AMD)
+  instruction set extension support.
+- Added display of the number of L1 and L2 caches for multi-core CPUs.
+- Updated the L3 cache data for Intel CPUs.
+- Fixed the Unknown L3 cache indication on newer Intel models without L3 cache.
+  The L3 cache on these CPUs is now correctly indicated as "None".
+- Fixed a bug where a mobile AMD Athlon XP was detected as an AMD Sempron CPU.
+- Added an XML mode to allow easy parsing of specific CPU details.
+- Expanded the Debug display to show all levels of CPUID Functions 4 and 11
+  (0Bh) for Intel CPUs.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.17 has the same update status as CHKCPU32 v2.05 and uses the same
+  CPU model data.
+
+Version 2.04
+02/02/2009
+- Updated the CPU data for new AMD Opteron Quad-Core, Phenom II X4, Phenom X3/X4,
+  Athlon X2, Turion X2 Ultra, and Sempron models,
+  and new Intel Xeon Quad/Six-core, Core i7 Quad, Core 2 Quad , Core 2 Duo,
+  Atom Dual-Core, Pentium Dual-Core , and Celeron models.
+- Improved L1/L2/L3 cache size detection on Intel CPUs.
+- Fixed a bug in the detection of several Athlon MP, Duron, and Sempron socket A
+  models. Note: This bug did not affect CPU model detection in Short mode.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.16 has the same update status as CHKCPU32 v2.04 and uses the same
+  CPU model data.
+
+Version 2.03
+07/07/2008
+- Expanded the CPU detection logic to include the Extended Model and Extended
+  Family bits in the CPU-ID Signature. This change became necessary now most
+  modern CPUs use these bits and to distinguish them from previous models
+  with the same Base Family/Model signature.
+- Added an Extended Family digit to the CPU Signature display. Together with the
+  Ext. Model digit and the 4-digit base Type/Family/Model/Stepping indication,
+  this now makes the CPU Signature a 6-digit display.
+- Updated the CPU data for new AMD Opteron Single/Dual/Quad-core, Phenom X3/X4,
+  Athlon 64 FX, Athlon 64 X2, Athlon 64 (Mobile), Turion 64 X2, Sempron (Mobile),
+  and Intel Xeon Dual-Core, Xeon Quad-Core, Core 2 Duo (Mobile), Core 2 Quad,
+  Pentium Dual-Core (Mobile), Celeron Dual-Core, Celeron M, Core 2 Solo,
+  Core Duo, Core Solo, Atom, and VIA C7 models.
+- Fixed the AMD Sempron detection on Rev. F models.
+- Corrected the Hyper-Threading display on AMD Dual/Multi-core CPUs.
+- Added logic to distinguish AMD Opteron CPUs from Athlon 64 (FX) models with
+  the same CPU-ID signature.
+- Added CPU core revision indication for all AMD K8 and K10 models.
+- Added a 'Virtualization Technology' display to the CPU Features list.
+  Indicates if a CPU supports the Virtual Machine extensions.
+- Removed the 'AMD MMX extensions' and 'AMD 3DNow! extensions' display from the
+  CPU Features list to make room for more interesting instruction set extensions. 
+- Cleaned up the Debug display by only showing IDT levels on IDT/VIA CPUs.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.15 has the same update status as CHKCPU32 v2.03 and uses the same
+  CPU model data.
+
+Version 2.02
+08/08/2007
+- Fixed the Intel Celeron M 410/420/430 detection (Yonah core).
+- Fixed the Xeon Dual-Core 3040-3070 detection (Conroe core).
+- Updated the CPU data for new AMD Athlon 64 (X2), Athlon 64 FX, Sempron,
+  Turion 64 X2, and Intel Xeon Dual-Core, Xeon Quad-Core, Core 2 Duo (Mobile),
+  Core 2 Quad, Celeron M, Core Solo, and Core Duo models.
+- Added support for the Intel Celeron Processor 400 Sequence.
+- Added an Extended Model digit to the CPU Signature display.
+- Added an 'Execute Disable protection' display which indicates if the CPU
+  supports the Data Execution Prevention feature. Used by WinXP SP2 and Vista.
+- Added support for displaying the L3 cache size on AMD CPUs.
+- Added an /F switch to allow output of the CPU internal frequency only.
+  This option can be used in scripts, to allow decision making based on speed.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.14 has the same update status as CHKCPU32 v2.02 and uses the same
+  CPU model data.
+
+Version 2.01
+02/02/2007
+- Updated the CPU data for new Intel Xeon Dual-Core, Core Duo, Pentium D,
+  Pentium 4, Celeron D, Pentium M, and Celeron M models.
+- Added support for the Intel Core 2 Duo and Core 2 Quad.
+- Added logic to distinguish an Intel Xeon (Dual-Core) from a Core 2 Duo,
+  Pentium D, or Pentium 4 model with the same CPUID signature.
+- Added a batch-file for easy use of the program.
+- If a DOS version of the program is needed, use CHKCPU v1.xx.
+  CHKCPU v1.13 has the same update status as CHKCPU32 v2.01 and uses the same
+  CPU model data.
+
+Version 2.00
+07/07/2006
+- Major Chkcpu revision. First release of Chkcpu32.
+- Because the use of DOS is declining rapidly , I wrote this new v2.00 Win32
+  console mode program (CHKCPU32.EXE) to have a better useable utility
+  when running Win95 or higher.
+- The CPU speed display is now more accurate on modern high speed CPUs.
+- Added a 'Number of CPUs' display which indicates the nbr of logical cores.
+- Updated the CPU data for new AMD Athlon 64, Athlon 64 X2, Sempron, and
+  Intel Pentium M, Celeron D, Pentium 4, Pentium D, Xeon, and VIA C3 models.
+- Added support for the Intel Core Solo/Duo and Transmeta Efficeon.
+- Enabled SSE3 display for any CPU that supports SSE2.
+- Corrected the Hyper-Threading display on Dual-Core CPUs.
+- Did not yet implement a Clock Multiplier and Bus clock speed display.
+  These will be added in a later CHKCPU32 version.
+- The old 16-bit DOS version (CHKCPU v1.xx) is also still maintained.
+  CHKCPU v1.12 has the same update status as CHKCPU32 v2.00 and uses the same
+  CPU model data.
+------------------------------------------------------------------------------
+

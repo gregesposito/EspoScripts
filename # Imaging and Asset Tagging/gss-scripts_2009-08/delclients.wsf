@@ -1,0 +1,571 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without
+' modification, are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its
+'   contributors may be used to endorse or promote products derived from this
+'   software without specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'----------------------------------------------------------------------------
+'
+' Attempt to locate all the various parts of the console database
+' that clients are related to, and clean most of them out. This is
+' useful largely because of a strange UI decision in the console
+' which is to reject client deletes when they are part of tasks
+' or reports, instead of simply cascading the delete of the
+' dependent rows (which it does do for other things).
+'
+' In combination with the new backup/restore scripts, this also
+' enables bulk cleanout of the clients in a database, which works
+' well if the backup/restore scripts are used to move databases to
+' fresh server instances.
+
+' Places to look for clients (that we might need to remove if we
+' want to help delete the client from the database).
+'
+' - [TaskOp] contains the link between a machine and custom
+' configuration records for task items if the [TaskStepId] is 18
+' (for Configuration, see the [TaskStep] table for the meanings
+' of the [TaskStepId] column)
+'
+' - [Task] can link directly to a machine view as well (whatever
+' it links to, the [TaskOp]s in the task all link to the same view
+' ID, whether it be a folder or machine, with the exception of
+' any custom configuration records for individual machines as
+' mentioned above).
+'   There's a detail with this, which is that we probably don't
+' want to delete these outright. Instead, we should point them
+' at the Default folder, which has [MachineViewId] of 1 so the
+' task definitions stick around.
+'
+' - Backup regime instances, not just the link in the [MachineID]
+' column of [BackupRegimeInstanceMachine] but also the [Filename]
+' column which refers to the external file containing the backup.
+'
+' - WMI Reports, [WMIReport].[MachineViewId]
+'
+' - Inventory data, in [WMIData] by [MachineID]
+'
+' - [MachineWMIViewMap], by [MachineID]
+'
+'-----------------------------------------------------------------
+'
+' Another detail to cover here is how the queries for the above
+' have to be structured. Because of the way that the console has
+' no distinction between shortcuts and machines, the separate names
+' for the shortcuts in the [MachineView] table can be different but
+' we have to match them all (unless we want to match the machine
+' name in the default configuration instead).
+'
+' Because that means a many-to-one-to-many-to-many cascade, which we
+' have to process in a really inconvenient order. Either we're going
+' to have a really nasty collection of subqueries or we'll have to
+' build up an in-memory list of machine view items and loop over
+' them (which is the kind of style that the console itself uses).
+'
+' The other aspect of this is whether we do the name matching using
+' SQL's 'LIKE' operator, or allow the use of full regular expression
+' syntax.
+'
+' If we had a normal database to operate against, we could at least
+' split the difference by materializing a table with the delete
+' list, but with the SQLAnywhere runtime edition in GSS we can't
+' create tables dynamically so this isn't an option. For now, I'm
+' using a string containing a set to experiment with how well it
+' works in larger environments.
+
+<job id="GSS Client Cleanup Utility">
+<script language="VBScript">
+  ' Some basic setup - this script requires a 32-bit execution environment
+
+  q = Chr (34)
+  set Shell = WScript.CreateObject ("WScript.Shell")
+  set Env = Shell.Environment ("Process")
+  arch = Env ("PROCESSOR_ARCHITECTURE")
+
+  if arch <> "x86" then
+    host = Replace (WScript.FullName, "System32", "SysWow64", 1, -1, 1)
+    if host = WScript.FullName then
+      WScript.Quit 1
+    end if
+
+    args = q & WScript.ScriptFullName & q
+    for each arg in WScript.Arguments
+      args = args & " " & q & arg & q
+    next
+
+    Shell.Run host & " " & args, 0, true
+    WScript.Quit 1
+  end if
+
+  if WScript.Version = "5.1" then
+    badScript = true
+  end if
+
+  if badScript then
+    set switches = namedArguments ()
+    unnamed = unnamedArguments ()
+    unnamedCount = UBound (unnamed) + 1
+  else
+    set switches = WScript.Arguments.Named
+    set unnamed = WScript.Arguments.Unnamed
+
+    unnamedCount = unnamed.Count
+  end if
+
+  crlf = Chr (13) & Chr (10)
+  set FS = WScript.CreateObject ("Scripting.FileSystemObject")
+
+  if unnamedCount > 0 then
+    find = unnamed (0)
+  else
+    find = InputBox ("Client name pattern to find" & crlf & _
+                     "hit ESC or cancel to quit", "Client finder", "pattern")
+  end if
+
+  if find = "" then
+    WScript.Quit 0
+  end if
+
+  quiet = switches.Exists ("quiet")
+  nobackup = switches.Exists ("nobackup")
+
+  ' Access the Configuration Server service's root COM scripting object
+
+  set server = CreateObject ("ConfigServer.Application")
+
+  ' Get the database configuration object from the configuration server
+
+  dim dbInfo
+  on error resume next
+  set dbInfo = server.ConfigDatabase
+  on error goto 0
+
+  ' Obtain the current database username and password
+
+  if not IsEmpty (dbInfo) then
+    user = dbInfo.Username
+    pass = dbinfo.Password
+  else
+    user = "dba"
+    pass = "sql"
+  end if
+
+  '---------------------------------------------------------------------------
+  ' Before we do anything, take an emergency undo backup of the current state.
+
+  backupScript = Replace (WScript.ScriptFullName, "delclients", "backupdb")
+
+  if nobackup then
+    ' nothing to do except proceed on
+  elseif FS.FileExists (backupScript) then
+    result = Shell.Run (q & backupScript & q & " /undo:ClientDelete", 2, true) 
+
+    if result <> 0 then
+      result = MsgBox ("Could not create undo cabinet, proceed with client delete?", 1)
+      if result <> 1 then
+        WScript.Quit 1
+      end if
+    end if
+
+  elseif not quiet then
+    ' If we don't have the backup script sitting next to us, nag
+
+    result = MsgBox ("Cannot find the backup script to create an undo file; " & lf & lf & _
+		     "Are you sure you want to proceed?", 1)
+
+    if result <> 1 then
+      WScript.Quit 1
+    end if
+  end if
+
+  ' Form the ODBC connection string to the database - this is a 32-bit connection
+  ' string, not usable on 64-bit systems (which also don't have the requisite ADODB
+  ' providers for doing anything useful, either).
+
+  conn = "DSN=Symantec Ghost;UID=" & user & ";PWD=" & pass
+
+  ' Begin by getting a connection to the database
+
+  set adoConn = CreateObject ("ADODB.Connection")
+  adoConn.Open (conn)
+  adoConn.BeginTrans
+
+  ' Begin by matching the machine names and getting the machine unique
+  ' database ID codes, from which we derive all the other stages in the
+  ' pipeline.
+
+  set machines = filterMachines (find)
+  if machines.Count = 0 then
+    WScript.Echo "No matches found"
+    WScript.Quit 1
+  end if
+
+  ' Second stage is to expand that into the set of all the shortcuts
+  ' that match the machine IDs, since many of the things that link to
+  ' machines do so by their shortcut ID instead of the machine ID.
+
+  set shortcuts = findShortcuts (machines)
+  set configs = findConfigs (machines)
+
+  dim machineCount
+  machineCount = machines.count
+
+  dim x
+  x = 0
+
+  dim limit
+  limit = 128
+
+  dim what
+  do while shortcuts.count > 0
+    what = keysToSet (shortcuts, limit)
+
+    x = x + clean_WMIReport (what) + _
+      	    clean_CustomConfigs (what) + _
+            clean_Tasks (what)
+  loop
+
+  do while configs.count > 0
+    what = keysToSet (configs, limit)
+
+    x = x + clean_Configs (what)
+  loop
+
+  ' The WMI data is a special case since it can have 10,000+ records
+  ' per machine; handle it one machine at a time to avoid internal
+  ' limits in ADO that blow out
+
+  dim item
+  for each item in machines.keys
+    x = x + clean_Inventory (item)
+  next
+
+  do while machines.count > 0
+    what = keysToSet (machines, limit)
+
+    x = x + clean_Backups (what) + _
+            clean_Machines (what)
+  loop
+
+  adoConn.commitTrans
+  server.RefreshDatabase
+
+  WScript.Echo machineCount & " client(s) with " & x & " database records cleaned"
+
+  ' Notify the configuration Server of the changes that we've made, which
+  ' it handles by re-reading everything.
+
+  WScript.Quit 0
+
+' Since WScript 5.1 doesn't support the Named argument collection, split the regular
+' arguments collection into pieces
+
+function namedArguments ()
+  set named = CreateObject ("Scripting.Dictionary")
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) = "/" then
+      pos = InStr (arg, ":")
+      if pos > 0 then
+        named.Add Mid (arg, 2, pos - 2), Mid (arg, pos + 1)
+      else
+        named.Add Mid (arg, 2), ""
+      end if
+    end if
+  next
+
+  set namedArguments = named
+end function
+
+' Similar to the above, get the set of unnamed arguments for WScript 5.1
+
+function unnamedArguments ()
+  count = 0
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      count = count + 1
+    end if
+  next
+
+  ' Now we now the array size, set it up.
+
+  dim output ()
+  redim output (count)
+
+  count = 0
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      output (count) = arg
+      count = count + 1
+    end if
+  next
+
+  unnamedArguments = output
+end function
+
+' Extract a string from the dictionary which combines the strings into a
+' set literal suitable for using with the IN operator.
+
+function keysToSet (dict, byval limit)
+  dim str
+  str = "("
+
+  dim id
+  for each id in dict.keys
+    if str <> "(" then
+      str = str & ","
+    end if
+
+    str = str & id
+    dict.remove (id)
+
+    if limit = 1 then
+      exit for
+    end if
+    limit = limit - 1
+  next
+
+  str = str & ")"
+
+  keysToSet = str
+end function
+
+' Create a query object
+
+function query (sql)
+  set adoRecord = CreateObject ("ADODB.RecordSet")
+  adoRecord.ActiveConnection = adoConn
+
+  adoRecord.Open (sql)
+  set query = adoRecord
+end function
+
+' Perform a one-shot execution
+
+function execSql (sql)
+  rows = 0
+  adoConn.Execute sql, rows
+  execSql = rows
+end function
+
+' Build a list of Machine.ID values by looking through all the MachineView
+' shortcut names and matching them. This only looks for machines, not
+' folders, since folders have no MachineID column.
+
+function filterMachines (pattern)
+  ' Create the RegExp object to do the matching
+
+  dim re
+  set re = new RegExp
+  re.Pattern = find
+  re.IgnoreCase = true
+
+  ' Create a dictionary to remember the view and machine table IDs.
+
+  dim dict
+  set dict = CreateObject ("Scripting.Dictionary")
+
+  ' Look in all the returned rows for the pattern the user asked for
+
+  dim record
+  set record = query ("select Description, MachineId " & _
+                      "from Machine, MachineView " & _
+                      "where Machine.ID = MachineView.MachineID")
+  do while not record.EOF
+    desc = record ("Description")
+    id = record ("MachineId")
+
+    if re.Test (desc) then
+      ' We got a hit; record the ID in a dictionary object
+      ' for future reference
+
+      dim x
+      x = CStr (id)
+
+      if not dict.Exists(x) then
+        dict.Add x, desc
+      end if
+    end if
+
+    record.MoveNext
+  loop
+
+  record.Close
+  
+  set filterMachines = dict
+end function
+
+
+' Take a dictionary of machine IDs and generate a dictionary of machine
+' shortcut (aka view) IDs
+
+function findShortcuts (machines)
+  dim dict
+  set dict = CreateObject ("Scripting.Dictionary")
+
+  dim machineId
+  for each machineId in machines.keys
+    dim record
+    set record = query ("select ID from MachineView " & _
+                        "where MachineId = " & machineId)
+
+    do while not record.EOF
+      dim id
+      id = record ("ID")
+
+      dict.Add id, machineId
+      record.MoveNext
+    loop
+
+    record.Close
+  next 
+
+  set findShortcuts = dict
+end function
+
+' Takes a dictionary of machine IDs and generate a dictionary of
+' config IDs
+
+function findConfigs (machines)
+  dim dict
+  set dict = CreateObject ("Scripting.Dictionary")
+
+  dim machineId
+  for each machineId in machines.keys
+    dim record
+    set record = query ("select ID from ResourceView " & _
+                        "where MachineId = " & machineId)
+
+    do while not record.EOF
+      dim id
+      id = record ("ID")
+
+      dict.Add id, machineId
+      record.MoveNext
+    loop
+
+    record.Close
+  next
+
+  set findConfigs = dict
+end function
+
+'--------------------------------------------------------------------
+' The various cleanup functions to purge the client data.
+
+function clean_WMIReport (shortcuts)
+  dim x
+  x = execSql ("delete from WMIReport " & _
+               "where MachineViewID IN " & shortcuts)
+
+  clean_WMIReport = x
+end function
+
+function clean_Backups (machines)
+  dim x
+  x = 0
+  set record = query ("select Filename " & _
+                      "from BackupRegimeInstanceMachine " & _
+                      "where MachineId IN " & machines)
+  do while not record.EOF
+    file = record ("Filename")
+
+    FS.DeleteFile file
+
+    record.Delete
+    record.MoveNext
+    x = x + 1
+  loop
+
+  record.Close
+
+  clean_Backups = x
+end function
+
+function clean_Inventory (id)
+  dim x
+  x = execSql ("delete from WMIData " & _
+               "where MachineId = " & id)
+
+  dim y
+  y = execSql ("delete from MachineWMIViewMap " & _
+               "where MachineId = " & id)
+
+  clean_Inventory = x + y
+end function
+
+function clean_CustomConfigs (shortcuts)
+  dim x
+  x = execSql ("delete from TaskOp " & _
+               "where TaskStepId = 18 " & _
+               " and MachineViewId IN " & shortcuts)
+
+  clean_CustomConfigs = x
+end function
+
+function clean_Configs (configs)
+  if configs = "()" then
+    clean_Configs = 0
+    exit function
+  end if
+
+  dim x
+  x = execSql ("delete from ConfParam " & _
+               "where ConfigurationId IN " & configs)
+
+  dim y
+  y = execSql ("delete from Configuration " & _
+               "where ID IN " & configs)
+
+  clean_Configs = x + y
+end function
+
+function clean_Tasks (shortcuts)
+  dim x
+  x = execSql ("update TaskOp " & _
+               "set MachineViewId = 1 " & _
+               "where MachineViewId IN " & shortcuts)
+
+  dim y
+  y = execSql ("update Task " & _
+               "set MachineViewId = 1 " & _
+               "where MachineViewId IN " & shortcuts)
+
+  clean_Tasks = x + y
+end function
+
+function clean_Machines (machines)
+  dim x
+  x = execSql ("delete from MachineView " & _
+               "where MachineId IN " & machines)
+
+  dim y
+  y = execSql ("delete from Machine " & _
+               "where ID IN " & machines)
+
+  clean_Machines = x + y
+end function
+
+</script>
+</job>

@@ -1,0 +1,3 @@
+@ECHO OFF
+WinAIA.exe -get "USERASSETDATA"
+pause

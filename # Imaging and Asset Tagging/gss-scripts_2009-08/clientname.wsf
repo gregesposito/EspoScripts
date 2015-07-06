@@ -1,0 +1,380 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without
+' modification, are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its
+'   contributors may be used to endorse or promote products derived from this
+'   software without specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'----------------------------------------------------------------------------
+'
+' Run a small query passed on the command line against the console database,
+' getting the console's credentials from the configuration server's COM
+' object (which requires that the caller be a member of the Administrators
+' group).
+'
+' This builds the names of the clients from the client ID codes by walking
+' up the folder/view tree, gluing the shortcuts together.
+'
+
+
+<job id="GSS Client List Utility">
+
+' Little helper so we can use the JavaScript run-time's understanding of
+' the Web URL-escaping convention, which we really need to use to build
+' sane paths out of the console's names, which don't have any kind of
+' reserved characters. By default we display the names plain, but it's nice
+' to be able to URLescape them - in future the Configuration Server is likely
+' to use URLescaped paths for these things because of the above problem.
+
+<script language="JScript">
+
+function urlEscape (str) {
+  return escape (str);
+}
+
+</script>
+
+<script language="VBScript">
+  ' Some basic setup - this script requires a 32-bit execution environment
+
+  q = Chr (34)
+  set Shell = WScript.CreateObject ("WScript.Shell")
+  set Env = Shell.Environment ("Process")
+  arch = Env ("PROCESSOR_ARCHITECTURE")
+
+  if arch <> "x86" then
+    host = Replace (WScript.FullName, "System32", "SysWow64", 1, -1, 1)
+    if host = WScript.FullName then
+      WScript.Quit 1
+    end if
+
+    args = q & WScript.ScriptFullName & q
+    for each arg in WScript.Arguments
+      args = args & " " & q & arg & q
+    next
+
+    if InStr (host, "wscript") <> 0 then
+      Shell.Run host & " " & args, 0, true
+    else
+      ' For running an inner copy of cscript, do this instead of using
+      ' Shell.Run so that we can ensure we can route the inner StdOut to
+      ' our StdOut properly in all circumstances.
+
+      set exec = Shell.Exec (host & " //NoLogo " & args)
+
+      do while exec.status = 0
+        do while not exec.StdOut.AtEndOfStream
+          input = exec.StdOut.ReadLine
+          WScript.StdOut.WriteLine input
+        loop
+        WScript.Sleep 100
+      loop
+
+    end if
+    WScript.Quit 1
+  end if
+
+  ' Get the pattern to search for within the MAC addresses of all the clients
+  ' in the console that are listed in the "Default" folder
+  '
+  ' A possible future extension is to also allow for searches within the
+  ' computer names.
+
+  crlf = Chr (13) & Chr (10)
+
+  if WScript.Arguments.Count > 0 then
+    find = WScript.Arguments (0)
+  else
+    find = InputBox ("MAC address pattern to find" & crlf & _
+                     "hit ESC or cancel to quit", "Client finder", "-")
+  end if
+
+  if find = "" then
+    WScript.Quit (0)
+  end if
+
+  ' Access the Configuration Server service's root COM scripting object
+
+  set server = CreateObject ("ConfigServer.Application")
+
+  ' Get the database configuration object from the configuration server
+
+  dim dbInfo
+  on error resume next
+  set dbInfo = server.ConfigDatabase
+  on error goto 0
+
+  ' Obtain the current database username and password
+
+  if not IsEmpty (dbInfo) then
+    user = dbInfo.Username
+    pass = dbinfo.Password
+  else
+    user = "dba"
+    pass = "sql"
+  end if
+
+  ' Some basic setup
+
+  q = Chr (34)
+  set Shell = WScript.CreateObject ("WScript.Shell")
+
+  ' Get the path to the dbisqlc executable - this is simpler to use than
+  ' ADO for some things.
+
+  path = Shell.RegRead("HKLM\Software\Symantec\Symantec Ghost\InstallDirectory\dbeng")
+  dbisql = q & path & "\dbisqlc" & q
+
+  ' Form the ODBC connection string to the database
+
+  conn = "DSN=Symantec Ghost;UID=" & user & ";PWD=" & pass
+
+  ' Begin by getting a connection to the database
+
+  set adoConn = CreateObject ("ADODB.Connection")
+  adoConn.Open (conn)
+
+  ' Associate a recordset object with the connection
+
+  set adoRecord = CreateObject ("ADODB.RecordSet")
+  adoRecord.ActiveConnection = adoConn
+
+  ' Run a query and get the client view information into three sets of
+  ' collections - we want to map client IDs to view IDs, view IDs to names,
+  ' and view IDs to their parents (where they exist).
+
+  cleaned = cleanMachineViews (adoConn)
+
+  dim machines ()
+  dim names ()
+  dim parents ()
+  call loadMachineViews (adoRecord)
+
+  ' Run a query - this one gets the MAC information, which is binary, from
+  ' the Machine table and joins it against the MachineView table; the RootID
+  ' being 1 restricts this to machines under the "Default" folder, since
+  ' there can be secondary copies of machines under other root folders.
+
+  query = "select ID, Identifier " & _
+          "from Machine"
+
+  adoRecord.Open (query)
+
+  find = UCase (find)
+
+  ' Look in all the returned rows for the pattern the user asked for, in
+  ' the MAC address list after we've converted it to a printable form
+
+  count = 0
+
+  do while not adoRecord.EOF
+    value = MAClist (adoRecord ("Identifier"))
+
+    if InStr (value, find) > 0 then
+      count = count + 1
+      if count > 19 then
+        WScript.Echo result
+        count = 0
+        result = ""
+      end if
+
+      path = getPath (adoRecord ("ID"), false)
+      result = result & path & "  [" & value & "]" & crlf
+    end if
+
+    adoRecord.MoveNext
+  loop
+
+  adoRecord.Close
+
+  ' If we cleaned things up, notify the Config server asap
+
+  if cleaned then
+    server.RefreshDatabase
+  end if
+
+  if Len (result) > 0 then
+    WScript.echo result
+  else
+    WScript.echo "No matches found"
+  end if
+
+' This converts the binary-encoded list of MAC addresses we store in the
+' Machine.Identifier column into a text string
+
+function MAClist (value)
+  ' The first three characters of a marshalled MAC address list should be
+  ' the following fixed value
+
+  if LeftB (value, 3) <> ChrB (33) & ChrB (0) & ChrB (0) then
+    exit function
+  end if
+  value = MidB (value, 4)
+
+  ' Loop over individual MAC addresses, each of which starts with the fixed
+  ' two-byte tag below
+
+  dim str
+  str = ""
+
+  do while LenB (value) > 0
+    if LeftB (value, 2) <> ChrB (32) & ChrB (6) then
+      exit do
+    end if
+
+    value = MidB (value, 3)
+
+    dim i
+    for i = 1 to 6
+      if i > 1 then
+        str = str & "-"
+      end if
+
+      str = str & Right ("00" & Hex (AscB (value)), 2)
+      value = MidB (value, 2)
+    next
+
+    if LenB (value) > 4 then
+      str = str & " "
+    end if
+  loop
+
+  MAClist = str
+end function
+
+' Attempt to clean up a client record which exists in the Machine table
+' but for which no View records exist (making them invisible in the
+' console). Done as a nested loop rather than a subquery because ADO
+' joins in subqueries can be too much for the provider.
+
+function cleanMachineViews (adoConnection)
+  dim query
+  query = "select Machine.ID as x " & _
+          "from Machine left join MachineView " & _
+          "on machine.id = machineView.machineId " & _
+          "where machineView.machineId is NULL"
+
+  dim rs
+  set rs = adoConnection.execute (query, rows, 1)
+
+  dim cmd
+  set cmd = CreateObject ("ADODB.Command")
+  cmd.ActiveConnection = adoConnection
+  cmd.CommandText = "delete from Machine where Id = ?"
+  cmd.CommandType = 1
+  cmd.Parameters.refresh
+
+  do while not rs.EOF
+    cleanMachineViews = true
+
+    cmd.Parameters(0).value = rs.fields.item("x").value
+    cmd.execute
+    rs.MoveNext
+  loop
+
+  rs.Close
+end function
+
+' Run a query and get the client view information into three sets of
+' collections - we want to map client IDs to view IDs, view IDs to names,
+' and view IDs to their parents (where they exist).
+
+sub loadMachineViews (adoRecord)
+  maxMachine = 0
+  maxView = 0
+
+  ' Run a query and get the client view information into three sets of
+  ' collections - we want to map client IDs to view IDs, view IDs to names,
+  ' and view IDs to their parents (where they exist).
+
+  dim query
+  query = "select ID, Description, MachineID, ParentID " & _
+          "from MachineView order by ID desc"
+
+  adoRecord.Open (query)
+
+  do while not adoRecord.EOF
+    dim machineId
+    machineId = adoRecord ("MachineID")
+
+    dim id
+    id = adoRecord ("ID")
+
+    if IsEmpty (names) or id > maxView then
+      maxView = id
+      redim preserve names (id)
+      redim preserve parents (id)
+    end if
+
+    names (id) = adoRecord ("Description")
+    parents (id) = adoRecord ("ParentID")
+
+    if Not IsNull (machineId) then
+      if machineId > maxMachine then
+        maxMachine = machineId
+        redim preserve machines (machineId)
+      end if
+
+      machines (machineId) = id
+    end if
+    adoRecord.MoveNext
+  loop
+
+  adoRecord.Close
+end sub
+
+' Use the machines, names, and parents arrays to builds a pathname right-to-left
+
+function getPath (id, escape)
+  dim viewId
+  viewId = machines (id)
+
+  if viewId = "" then
+    getPath = "" 
+    exit function
+  end if
+
+  dim str
+  str = names (viewId)
+  if escape then
+    str = urlEscape (str)
+  end if
+
+  do while Not IsNull (parents (viewId))
+    viewId = parents (viewId)
+
+    dim parent
+    parent = names (viewId)
+    if escape then
+      parent = urlEscape (parent)
+    end if
+
+    str = parent & "\" & str
+  loop
+
+  getPath = str
+end function
+
+</script>
+
+</job>

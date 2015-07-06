@@ -1,0 +1,1 @@
+@FOR /F "usebackq" %%i IN (%1) DO @cscript /nologo %~dp0\NetComment.vbs %%i ""

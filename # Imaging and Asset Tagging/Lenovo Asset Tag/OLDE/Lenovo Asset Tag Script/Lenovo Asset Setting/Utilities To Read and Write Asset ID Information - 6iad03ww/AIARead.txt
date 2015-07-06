@@ -1,0 +1,93 @@
+AIAREAD - Utility to Read AIA information   Version 1.0
+
+Syntax:
+
+    AIAREAD group [field] [/f=file] [/a] [/s] [/x] [/p=prefix],
+
+where:
+
+group   The name of the device group.
+field   The name of the field to read (default is all fields).
+file    Name of file to output results to (default is stdout).
+/a      Append the file (default is overwrite file).
+/s      Output formatted as SET statements. ie. 'SET name=value' (defulat is name=value)
+/x      exclude fields that are null strings or zero values.
+/p      Prepend 'prefix' to the name of each field
+
+***********************************************************************
+AIAREAD Utility Author Notes:
+
+  1. All options, group and field names are case-insensitive except for
+     the USERDEVICE group and the prefix.
+  2. If you specify no options or incorrect options, then this help text
+     is displayed.  You may use the more command to see it page by page:
+           AIAREAD |MORE
+  3. There is an undocumented /d debug flag.  This may help if you get a
+     failure and are not sure where it is comming from or what it means.
+*********************************************************************************
+Below is a list of error codes that currently are upon exit of 
+AIAREAD.EXE.  They can be tested in a .bat file by the errorlevel command, if 
+desired.
+
+// Error Exit Codes defined in AIAREAD
+#define SUCCESS                    0X00 // everything is OK
+#define FILE_OPEN_ERROR            0x20 // fopen failed (disk full, file write protected,open?)
+#define FIELD_NOT_FOUND            0x21 // A valid field was not found in the AIA data area
+#define PRINT_FORMAT_ERROR         0X22 // Tryed to format and print line, but line was invalid
+#define NO_GROUP_SPECIFIED         0X23 // Group option is REQUIRED, but was not specified
+#define INVALID_GROUP_ENTERED      0X24 // Group Name entered is unknown
+#define INVALID_FIELD_ENTERED      0X25 // Can't find this field name associated with group
+#define INVALID_FILE_OPTION        0X26 // User forgot to use '=' with /f option
+#define INVALID_PREFIX_OPTION      0X27 // User forgot to use '=' with /p option
+#define UNKNOWN_OPTION_SPECIFIED   0X28 // User specified an option that we don't support 
+#define INVALID_NIC_PARM           0X29 // User requested nth NIC, 'n' is either invalid or > NUMNICS
+#define TOO_MANY_LABEL_VALUE_PAIRS 0X2A // More than 5 Label=Value pairs for USERDEVICE group
+#define NO_AIA_EPROM_FOUND         0X2B // This client does not appear to have an RFID EPROM
+// Error codes from reading the RFID EPROM
+#define EE_ERR_NO_ERROR                0
+#define EE_ERR_COMMUNICATION_FAILURE   1
+#define EE_ERR_BAD_HEADER              2
+#define EE_ERR_UNKNOWN_VERSION         3
+#define EE_ERR_OUT_OF_SPACE            4
+#define EE_ERR_REREAD_FAILURE1         5
+#define EE_ERR_REREAD_FAILURE2         6
+#define EE_ERR_INVALID_CHECKSUM        7
+#define EE_ERR_ILLEGAL_INSTANCE        8
+#define EE_ERR_NOT_FOUND               9
+#define EE_CORRUPT_USER_AREA          10
+#define EE_CORRUPT_RF_ID              11
+*********************************************************************************
+Valid Groups and their associated fields are listed below:
+
+  NETWORKCONNECTION  NUMNICS
+                     GATEWAY
+                     IPADDRESS[n]   (1<=n<=NUMNICS, default=1)
+                     SUBNETMASK[n]
+                     SYSTEMNAME
+                     LOGINNAME
+
+  USERDEVICE         <Field1> - These fields are defined by the 
+                     :          user;  maximum is five user fields
+                     <Field5>
+
+  PRELOADPROFILE     IMAGEDATE
+                     IMAGE
+
+  USERASSETDATA      PURCHASE_DATE
+                     LAST_INVENTORIED
+                     WARRANTY_END
+                     WARRANTY_DURATION
+                     AMOUNT
+                     ASSET_NUMBER
+
+  LEASEDATA          LEASE_START_DATE
+                     LEASE_END_DATE
+                     LEASE_TERM
+                     LEASE_AMOUNT
+                     LESSOR
+
+  OWNERDATA          OWNERNAME
+                     DEPARTMENT
+                     LOCATION
+                     PHONE_NUMBER
+                     OWNERPOSITION

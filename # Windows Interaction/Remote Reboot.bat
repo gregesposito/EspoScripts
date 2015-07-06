@@ -1,0 +1,1 @@
+shutdown /r /f /m \\coputername /c "this computer is being rebooted" /t 5

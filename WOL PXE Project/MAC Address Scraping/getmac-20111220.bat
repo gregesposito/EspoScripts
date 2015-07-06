@@ -1,0 +1,1 @@
+getmac /v /fo csv >>macs.csv

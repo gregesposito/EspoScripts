@@ -1,0 +1,280 @@
+==================================================
+Device Name       : Port_#0001.Hub_#0003
+Description       : Microsoft Mouse and Keyboard Detection Driver (USB)
+Device Type       : Unknown
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : 
+Serial Number     : 
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/6/2012 11:00:00 AM
+VendorID          : 045e
+ProductID         : 0745
+Firmware Revision : 2.52
+USB Class         : 00
+USB SubClass      : 00
+USB Protocol      : 00
+Hub / Port        : Hub 2, Port 1
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 7&111319b0&0
+Service Name      : usbccgp
+Service Description: Microsoft USB Generic Parent Driver
+Driver Filename   : usbccgp.sys
+Device Class      : USB
+Device Mfg        : Microsoft
+Power             : 100 mA
+USB Version       : 2.00
+Driver Description: Microsoft Mouse and Keyboard Detection Driver (USB)
+Driver Version    : 8.20.409.0
+Instance ID       : USB\VID_045E&PID_0745\6&383296ac&0&1
+==================================================
+
+==================================================
+Device Name       : Port_#0001.Hub_#0004
+Description       : Generic- Multi-Card USB Device
+Device Type       : Mass Storage
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : E:
+Serial Number     : 20071114173400000
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/6/2012 11:00:01 AM
+VendorID          : 0bda
+ProductID         : 0159
+Firmware Revision : 58.88
+USB Class         : 08
+USB SubClass      : 06
+USB Protocol      : 50
+Hub / Port        : 
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 
+Service Name      : USBSTOR
+Service Description: USB Mass Storage Driver
+Driver Filename   : USBSTOR.SYS
+Device Class      : USB
+Device Mfg        : Compatible USB storage device
+Power             : 500 mA
+USB Version       : 2.00
+Driver Description: USB Mass Storage Device
+Driver Version    : 6.1.7601.17577
+Instance ID       : USB\VID_0BDA&PID_0159\20071114173400000
+==================================================
+
+==================================================
+Device Name       : Port_#0002.Hub_#0003
+Description       : USB Input Device
+Device Type       : HID (Human Interface Device)
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : 
+Serial Number     : S/N:F2CA8B1D7726D34199B5D7CEB0CA57E3_Rev:NBCACAAK3
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/8/2012 9:30:21 AM
+VendorID          : 05e0
+ProductID         : 1200
+Firmware Revision : 0.02
+USB Class         : 03
+USB SubClass      : 01
+USB Protocol      : 01
+Hub / Port        : 
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 7&6afe3c0&0
+Service Name      : HidUsb
+Service Description: Microsoft HID Class Driver
+Driver Filename   : hidusb.sys
+Device Class      : HIDClass
+Device Mfg        : (Standard system devices)
+Power             : 
+USB Version       : 
+Driver Description: USB Input Device
+Driver Version    : 6.1.7601.17514
+Instance ID       : USB\VID_05E0&PID_1200\S/N:F2CA8B1D7726D34199B5D7CEB0CA57E3_Rev:NBCACAAK3
+==================================================
+
+==================================================
+Device Name       : Port_#0002.Hub_#0005
+Description       : USB Input Device
+Device Type       : HID (Human Interface Device)
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : 
+Serial Number     : 
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/8/2012 8:30:32 AM
+VendorID          : 093a
+ProductID         : 2510
+Firmware Revision : 1.00
+USB Class         : 03
+USB SubClass      : 01
+USB Protocol      : 02
+Hub / Port        : Hub 4, Port 2
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 8&2c24e57f&0
+Service Name      : HidUsb
+Service Description: Microsoft HID Class Driver
+Driver Filename   : hidusb.sys
+Device Class      : HIDClass
+Device Mfg        : (Standard system devices)
+Power             : 100 mA
+USB Version       : 1.10
+Driver Description: USB Input Device
+Driver Version    : 6.1.7601.17514
+Instance ID       : USB\VID_093A&PID_2510\7&1a125fde&0&2
+==================================================
+
+==================================================
+Device Name       : Port_#0003.Hub_#0003
+Description       : TouchChip Fingerprint Coprocessor (WBF advanced mode)
+Device Type       : Vendor Specific
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : 
+Serial Number     : 
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/6/2012 11:00:04 AM
+VendorID          : 147e
+ProductID         : 2016
+Firmware Revision : 0.02
+USB Class         : ff
+USB SubClass      : 00
+USB Protocol      : 00
+Hub / Port        : Hub 2, Port 3
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 
+Service Name      : WUDFRd
+Service Description: 
+Driver Filename   : WUDFRd.sys
+Device Class      : BiometricDevice
+Device Mfg        : AuthenTec
+Power             : 0 mA
+USB Version       : 
+Driver Description: TouchChip Fingerprint Coprocessor (WBF advanced mode)
+Driver Version    : 1.5.0.289
+Instance ID       : USB\VID_147E&PID_2016\6&383296ac&0&3
+==================================================
+
+==================================================
+Device Name       : Port_#0003.Hub_#0005
+Description       : USB Input Device
+Device Type       : HID (Human Interface Device)
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : 
+Serial Number     : 
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/8/2012 8:30:33 AM
+VendorID          : 046d
+ProductID         : c312
+Firmware Revision : 1.01
+USB Class         : 03
+USB SubClass      : 01
+USB Protocol      : 01
+Hub / Port        : Hub 4, Port 3
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 8&c819656&0
+Service Name      : HidUsb
+Service Description: Microsoft HID Class Driver
+Driver Filename   : hidusb.sys
+Device Class      : HIDClass
+Device Mfg        : (Standard system devices)
+Power             : 70 mA
+USB Version       : 1.10
+Driver Description: USB Input Device
+Driver Version    : 6.1.7601.17514
+Instance ID       : USB\VID_046D&PID_C312\7&1a125fde&0&3
+==================================================
+
+==================================================
+Device Name       : Port_#0004.Hub_#0003
+Description       : ThinkPad Bluetooth 3.0
+Device Type       : Unknown
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : 
+Serial Number     : 78DD08A6E998
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/6/2012 11:00:01 AM
+VendorID          : 0a5c
+ProductID         : 217f
+Firmware Revision : 3.60
+USB Class         : 00
+USB SubClass      : 00
+USB Protocol      : 00
+Hub / Port        : 
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 7&291a8fd0&0
+Service Name      : BTHUSB
+Service Description: Bluetooth Radio USB Driver
+Driver Filename   : BTHUSB.sys
+Device Class      : Bluetooth
+Device Mfg        : Broadcom
+Power             : 0 mA
+USB Version       : 2.00
+Driver Description: ThinkPad Bluetooth 3.0
+Driver Version    : 6.5.0.1445
+Instance ID       : USB\VID_0A5C&PID_217F\78DD08A6E998
+==================================================
+
+==================================================
+Device Name       : Port_#0006.Hub_#0003
+Description       : USB Composite Device
+Device Type       : Unknown
+Connected         : Yes
+Safe To Unplug    : Yes
+Disabled          : No
+USB Hub           : No
+Drive Letter      : 
+Serial Number     : 
+Created Date      : 5/8/2012 3:27:10 AM
+Last Plug/Unplug Date: 5/6/2012 11:00:02 AM
+VendorID          : 17ef
+ProductID         : 4816
+Firmware Revision : 23.45
+USB Class         : 00
+USB SubClass      : 00
+USB Protocol      : 00
+Hub / Port        : Hub 2, Port 6
+Computer Name     : 
+Vendor Name       : 
+Product Name      : 
+ParentId Prefix   : 7&4d54174&1
+Service Name      : usbccgp
+Service Description: Microsoft USB Generic Parent Driver
+Driver Filename   : usbccgp.sys
+Device Class      : USB
+Device Mfg        : (Standard USB Host Controller)
+Power             : 0 mA
+USB Version       : 
+Driver Description: USB Composite Device
+Driver Version    : 6.1.7601.17586
+Instance ID       : USB\VID_17EF&PID_4816\6&383296ac&0&6
+==================================================
+

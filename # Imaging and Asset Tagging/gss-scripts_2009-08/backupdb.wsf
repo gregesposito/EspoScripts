@@ -1,0 +1,762 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without
+' modification, are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its
+'   contributors may be used to endorse or promote products derived from this
+'   software without specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'----------------------------------------------------------------------------
+'
+' Create a single Cabinet-format archive with the GSS server database and all
+' the associated bits and bobs such as the access passwords for the database
+' and the server certificates.
+'
+' This isn't a complete backup, since I don't dig into the database to find all
+' the image data and migration packages and other such bits and pieces - that
+' could be done, but the cabinet format doesn't suit such things very well so
+' I'd rather write a separate script some other time that outputs a list of the
+' needed files. What this script *does* do is all the other internal essentials
+' of the program itself, in other words basically the procedure I wrote up for
+'  http://entsupport.symantec.com/docs/n2001050812540225
+
+<job id="GSS Backup Utility">
+<script language="VBScript">
+  ' Initial Windows 2000 uses WScript 5.1, which is pretty awful. It's tempting
+  ' to nag people to upgrade, but for now we won't since I've been able to find
+  ' at least vaguely tractable workarounds for all its defects.
+  '
+  ' The free WSH 5.7 update can be gotten from
+  ' http://www.microsoft.com/downloads/results.aspx?freetext=Windows%20Script%205.7&DisplayLang=en
+
+  if WScript.Version = "5.1" then
+    badScript = true
+  end if
+
+  set args = WScript.Arguments
+
+  if badScript then
+    set switches = namedArguments ()
+    unnamed = unnamedArguments ()
+    unnamedCount = UBound (unnamed) + 1
+  else
+    set switches = WScript.Arguments.Named
+    set unnamed = WScript.Arguments.Unnamed
+
+    unnamedCount = unnamed.Count
+  end if
+
+  ' Various basic pieces of setup
+
+  q = Chr (34)
+  lf = Chr (10)
+
+  set Shell = WScript.CreateObject ("WScript.Shell")
+  set FS = WScript.CreateObject ("Scripting.FileSystemObject")
+
+  ' If and when I make more of the scripts persist some key settings, this
+  ' will be where in the registry the settings go. Note that these are under
+  ' "Current User", not "Local Machine"
+
+  scriptRegistry = "HKCU\Software\Symantec\Symantec Ghost\Scripts\"
+
+  ' The "diags" flag means that we collect more stuff, including the
+  ' ngserver.log file and the inventory data. We could also script some other
+  ' extra bits of info-gathering here, such as the server's ipconfig data
+  ' which is really useful
+
+  if switches.Exists ("?") then
+    WScript.Echo "GSS 2.0 and 1.1 database backup tool (test version; 25 April 2007)" & _
+       lf & lf & "Usage: backupdb.wsf [/diags][/name:<cabname>][/path:<output path>]" & _
+       lf & lf & "                    [/keep:<count>]" & _
+       lf & lf & "The default <cabname> is ""GSSBackup.cab""" & _
+       lf & lf & "The default <output path> is ""GSSBackup"" under ""My Documents""." & _
+       lf & lf & "If <output path> is $DOCS$ then the cabinet is placed in ""My Documents""." & _
+       lf & lf & "/diags includes details useful for developer analysis of the server." & _
+       lf & lf & "You can also drag a folder onto the script file to output to it."
+    WScript.Quit 0
+  end if
+
+  diagnostic = switches.Exists ("diags")
+
+  if switches.Exists ("undo") then
+    undoMode = True
+    keepValueName = "UndoKeepCount"
+    baseName = "GSSUndo" & switches.Item ("undo")
+    shortcutName = "Open Latest Save"
+    restoreName = "Undo Latest " & switches.Item ("undo")
+  else
+    undoMode = False
+    keepValueName = "BackupKeepCount"
+    baseName = "GSSBackup"
+    shortcutName = "Open Latest Backup"
+    restoreName = "Restore Latest Backup"
+  end if
+
+  if switches.Exists ("name") then
+    cabName = switches.Item ("name")
+    singleCabOnly = true
+  else
+    ' Format the current date in YYYY-MM-DD format, since that's what sorts
+    ' properly in the output directory.
+    when = Now
+    name = CStr (Year (when)) & "-" & Right ("0" & Month (when), 2) & "-" & _
+           Right ("0" & Day (when), 2) & "_" & Right ("0" & Hour (when), 2) & _
+           "-" & Right ("0" & Minute (when), 2) & "-" & _
+           Right ("0" & Second (when), 2)
+
+    cabName = baseName & "_" & name & ".cab"
+  end if
+
+  if switches.Exists ("keep") then
+    keepCount = CInt (switches.Item ("keep"))
+  else
+    on error resume next
+    keepCount = Shell.RegRead (scriptRegistry & keepValueName)
+    if Err <> 0 then
+      keepCount = 3
+    end if
+    on error goto 0
+  end if
+  
+  ' two is the absolute minimum for safety
+
+  if keepCount < 2 then
+    keepCount = 2
+  end if
+
+  if switches.Exists ("path") then
+    outputPath = FS.GetAbsolutePathName (switches.Item ("path"))
+  elseif unnamedCount > 0 then
+
+    outputPath = unnamed (0)
+
+    if FS.FolderExists (outputPath) then
+      ' we have our output folder
+      outputPath = FS.GetAbsolutePathName (outputPath)
+    elseif strEq (Right (outputPath, 4), ".cab") then
+      cabName = FS.GetFileName (outputPath)
+      outputPath = FS.GetParentFolderName (FS.GetAbsolutePathName (outputPath))
+      singleCabOnly = true
+    else
+      WScript.Echo outputPath & " is not a folder that the output can be placed in"
+      WScript.Quit 1
+    end if
+  else
+    on error resume next
+    outputPath = Shell.RegRead (scriptRegistry & "BackupFolder")
+    on error goto 0
+  end if
+
+  ' Set up to query the registry and create some quoted strings referencing
+  ' some useful paths
+
+  software = "HKLM\Software\"
+  on error resume next
+  ghostPath = Shell.RegRead (software & "Symantec\InstalledApps\Ghost")
+  on error goto 0
+
+  if ghostPath = "" then
+    wow64 = "Wow6432Node\"
+    software = software & wow64
+    ghostPath = Shell.RegRead (software & "Symantec\InstalledApps\Ghost")
+  end if
+
+  if ghostPath = "" then
+    WScript.Echo "A GSS server was not found on this machine"
+    WScript.Quit 1
+  end if
+
+  ' Vista elevation check: can we access privkey.crt? If it exists but we can't
+  ' open it, then re-launch ourselves. This file is maintained with a special
+  ' ACL which is why this test works.
+
+  crt = ghostPath & "\privkey.crt"
+  if FS.FileExists (crt) then
+    dim reader
+
+    on error resume next
+    set reader = FS.OpenTextFile (crt, 1)
+    on error goto 0
+
+    if not IsObject (reader) then
+      if isVista then
+        relaunchElevated
+      else
+        WScript.Echo "Cannot run this script as a non-administrator"
+      end if
+      WScript.Quit 1
+    end if
+
+    set reader = nothing
+  end if
+
+  serverExe = ghostPath & "\ngserver.exe"
+  consoleExe = ghostPath & "\ngcons.exe"
+
+  dbeng = Shell.RegRead (software & "Symantec\Symantec Ghost\InstallDirectory\dbeng")
+  backupExe = q & dbeng & "\dbbackup" & q
+
+  dataPath = Shell.RegRead (software & "Symantec\Symantec Ghost\InstallDirectory\data")
+
+  ' Another reasonable output location for the final CAB would be into the "My
+  ' Documents" folder itself, aka myDocsFolder.Self.Path
+
+  if outputPath = "" then
+    outputPath = defaultOutputPath (baseName)
+  end if
+
+  if not FS.FolderExists (outputPath) then
+    FS.CreateFolder (outputPath)
+  end if
+
+  ' It's reasonably safe to use the output path for our small collection of temporary
+  ' files, or else we can use a subdirectory. For now I'll choose to use a subdirectory
+
+  workingPath = outputPath & "\cab_build"
+  regPath = workingPath & "\passwords.reg"
+
+  if not FS.FolderExists (workingPath) then
+    FS.CreateFolder workingPath
+  end if
+
+  ' Determine whether the server executable supports credential export - GSS 1.1 has
+  ' it, GSS 1.0 (aka Ghost 8.2 and earlier) does not.
+
+  dim exports
+  exports = CDbl (Left (FS.GetFileVersion (serverExe), 3)) >= 8.3
+
+  ' Ask the Configuration Server to export the stored credentials to the registry.
+
+  if exports then
+    window = 2
+    result = Shell.Run (q & serverExe & q & " -export", window, true)
+
+    ' Read the DBA-level username and password out from the registry (later on we'll
+    ' export these to a file and scrub them).
+
+    user = Shell.RegRead (software & "Symantec\Symantec Ghost\NGServer\DBA")
+    pass = Shell.RegRead (software & "Symantec\Symantec Ghost\NGServer\DBP")
+  else
+    ' For GSS 1.0 and earlier, use the embedded default credentials.
+
+    user = "dba"
+    pass = "sql"
+  end if
+
+  ' Get the NGServer file version, so we can write that to a file we can include in
+  ' the cabinet; this will allow restore scripts to check that the database can in
+  ' fact be restored directly or whether a schema upgrade would be needed
+
+  versionFilePath = workingPath & "\version.txt"
+  set file = FS.CreateTextFile (versionFilePath)
+  file.WriteLine FS.GetFileVersion (serverExe)
+  file.Close
+
+  ' Could use the "reg" tool to write out the exported credentials to a .reg
+  ' file but as that doesn't exist on Win2k we use some script code that
+  ' produces basically the identical output and does work on Win2k. The flag
+  ' to my export function removes the subkey as well.
+
+  str = exportHklm ("Software\" & wow64 & "Symantec\Symantec Ghost\NGServer", true)
+  result = writeReg (FS, regPath, str)
+
+  ' This is the old code to export and scrub the passwords
+  ' result = Shell.Run ("reg export ""HKLM\Software\" & wow64 & "Symantec\Symantec Ghost\NGServer"" " & _
+  '                     q & regPath & q, window, true)
+  ' result = Shell.Run (serverExe, window, true)
+
+  ' Try and copy the DB file directory, in case the service isn't running (this
+  ' is easier than testing for the service).
+
+  on error resume next
+  dbFilePath = workingPath & "\SYMANTECGHOST.DB"
+  FS.DeleteFile dbFilePath
+  FS.CopyFile ghostPath & "\db\SYMANTECGHOST.DB", dbFilePath, true
+  on error goto 0
+
+  ' If the above didn't work (which is what we expect) then we use the
+  ' preferred Sybase backup utility.
+  
+  if not FS.FileExists (dbFilePath) then
+    ' Form an ODBC connection string to the database
+
+    conn = q & "DSN=Symantec Ghost;UID=" & user & ";PWD=" & pass & q
+
+    ' Run the dbbackup command - the server or console has to be running for this
+
+    retval = Shell.Run (backupExe & " -y -c " & conn & " " & q & workingPath & q, _
+                        window ,true)
+  end if
+
+  ' Create a DDF file which we will use to build the final CAB with Makecab
+
+  ddfPath = workingPath & "\backup.ddf"
+  set ddf = FS.CreateTextFile (ddfPath, true, false)
+
+  ' Various setup; make a cabinet, don't limit the length, and use a higher
+  ' compression level than the default
+
+  ddf.WriteLine ".option explicit"
+  ddf.WriteLine ".set Cabinet=ON"
+  ddf.WriteLine ".set MaxDiskSize=0"
+  ddf.WriteLine ".set CompressionType=LZX"
+
+  ' The following options set the output directory for the cabinet, and the
+  ' name of the cabinet itself.
+
+  ddf.WriteLine ".set DiskDirectory1=" & q & outputPath & q
+  ddf.WriteLine ".set CabinetNameTemplate=" & cabName
+
+  ' The following go into the root of the cabinet.
+
+  ddf.WriteLine
+  ddf.WriteLine q & versionFilePath & q
+  ddf.WriteLine q & regPath & q
+  ddf.WriteLine q & ghostPath & "\pubkey.crt" & q
+  ddf.WriteLine q & ghostPath & "\privkey.crt" & q
+
+  ' If we have the restore script sitting here alongside us, put a copy of it
+  ' into the cabinet as well
+
+  restoreScript = Replace (WScript.ScriptFullName, "backup", "restore")
+  if FS.FileExists (restoreScript) then
+    ddf.WriteLine q & restoreScript & q
+  end if
+
+  if diagnostic then
+    ddf.WriteLine q & ghostPath & "\ngserver.log" & q
+    
+    ipPath = workingPath & "\ipconfig.txt"
+    result = Shell.Run ("cmd /c ipconfig /all >" & q & ipPath & q, window, true)
+    ddf.WriteLine q & ipPath & q
+  end if
+
+  ' The following go into the "db" directory of the cabinet
+
+  ddf.WriteLine
+  ddf.WriteLine ".set DestinationDir=db"
+  ddf.Writeline q & dbFilePath & q
+
+  ' The following go into the "db\data directory" of the cabinet
+  ' This stuff isn't actually super-essential; it's something I'd include in a
+  ' complete image for diagnostic purposes
+
+  if diagnostic then
+    ddf.WriteLine
+    ddf.WriteLine ".set DestinationDir=db\data"
+
+    set data = FS.GetFolder (dataPath)
+    set files = data.Files
+    for each file in files
+      ddf.WriteLine q & file.Path & q
+    next
+  end if
+
+  ' Now we're done with the manifest, close the TextStream
+
+  ddf.Close
+
+  ' Actually build the cabinet
+
+  result = Shell.Run ("makecab /f " & q & ddfPath & q, window, true)
+  if result <> 0 then
+    WScript.Echo "MakeCAB failed to build the output cabinet, backup not taken"
+    WScript.Quit 1
+  end if
+
+  ' Now set about cleaning up temporary stuff. MakeCAB generates two files
+  ' called setup.inf and setup.rpt that we should clean up.
+
+  FS.DeleteFile "setup.inf"
+  FS.DeleteFile "setup.rpt"
+
+  ' Remove the individual temporary files so the cab stays in place
+  ' use the "force" flag on the DB file since it might be read-only
+
+  FS.DeleteFile versionFilePath
+  FS.DeleteFile regPath
+  FS.DeleteFile dbFilePath, true
+  FS.DeleteFile ddfPath
+  if not IsEmpty (ipPath) then
+    FS.DeleteFile ipPath
+  end if
+
+  if workingPath <> outputPath then
+    FS.DeleteFolder workingPath
+  end if
+
+  if not singleCabOnly then
+    ' Create a shortcut to the cabinet we just made
+
+    keepFiles outputPath, keepCount
+
+    dim path
+    path = outputPath & "\" & shortcutName & ".lnk"
+
+    dim shortcut
+    set shortcut = Shell.CreateShortcut (path)
+    shortcut.Description = "Most recent GSS backup cabinet"
+    shortcut.TargetPath = outputPath & "\" & cabName
+    shortcut.IconLocation = consoleExe & ",0"
+    shortcut.Save
+
+    makeRequireAdmin (path)
+
+    if FS.FileExists (restoreScript) then
+      path = outputPath & "\" & restoreName & ".lnk"
+
+      ' This target needs to reference the script engine (be an EXE)
+      ' so we can request elevation.
+
+      set shortcut = Shell.CreateShortcut (path)
+      shortcut.TargetPath = WScript.FullName
+      shortcut.Description = "Restore most recent GSS backup"
+      shortcut.Arguments = q & restoreScript & q & " " & q & outputPath & "\" & cabName & q
+      shortcut.IconLocation = serverExe & ",0"
+      shortcut.Save
+      
+      makeRequireAdmin (path)
+    end if
+  end if
+
+  WScript.Quit result
+
+' Because the "reg" command-line tool appeared in Windows XP and some GSS users
+' are running Windows 2000, we emulate the workings of the "reg" (or regedit)
+' tool's "export" function here.
+'
+' For some bizarre reason instead of being a plain COM object, scripting access
+' to the registry is through a WMI provider that has no data - only methods.
+' Still, as odd as it is, it's almost the only way to get the job done, and
+' it's just portable enough for our needs.
+
+function exportHklm (path, deleteFlag)
+  dim reg
+  set reg = GetObject ("winmgmts:\\.\root\default:StdRegProv")
+
+  HKLM = &H80000002
+
+  dim result
+  dim types
+  result = reg.EnumValues (HKLM, path, names, types)
+
+  dim result2
+  dim keys
+  result2 = reg.EnumKey (HKLM, path, keys)
+
+  if result <> 0 and result2 <> 0 then
+    exportHklm = ""
+    exit function
+  end if
+
+  dim q
+  q = Chr (34)
+  
+  dim crlf
+  crlf = Chr (13) & Chr (10)
+
+  dim str
+  str = crlf & "[HKEY_LOCAL_MACHINE\" & path & "]" & crlf
+
+  dim value
+  if result = 0 and IsArray (names) then
+    for i = lbound (names) to ubound (names)
+      ' type 1 is REG_SZ, type 3 is REG_BINARY, type 4 is DWORD
+      ' and let's ignore the rest for now
+
+      select case types (i)
+      case 1
+        result = reg.GetStringValue (HKLM, path, names (i), value)
+        if result = 0 then
+          ' Quote backslashes, just like the "Reg" tool does
+          value = Replace (value, "\", "\\", 1, -1, 1)
+          
+          ' Use @ as the name of the default value rather than an empty string
+          ' as the WMI provider yields (fortunately it does at least include
+          ' the default value in the enumeration along with the named values).
+
+          if names (i) = "" then
+            str = str & "@"
+          else
+            str = str & q & names (i) & q 
+          end if
+          str = str & "=" & q & value & q & crlf
+        end if
+
+      case 3
+        result = reg.GetBinaryValue (HKLM, path, names (i), value)
+        if result = 0 then
+          str = str & q & names (i) & q & "=hex:"
+
+          dim j
+          for j = lbound (value) to ubound (value)
+            if j > lbound (value) then
+              str = str & ","
+            end if
+            str = str & Right ("00" & LCase (Hex (value (j))), 2)
+          next
+          str = str & crlf
+        end if
+
+      case 4
+        result = reg.GetDWORDValue (HKLM, path, names (i), value)
+        if result = 0 then
+          value = Right ("0000000" & Hex (value), 8)
+          str = str & q & names (i) & q & "=dword:" & value & crlf
+        end if
+      end select
+    next
+  end if
+
+  if result2 = 0 and IsArray (keys) then
+    dim key
+    for each key in keys
+      str = str & exportHklm (path & "\" & key)
+    next
+  end if
+
+  if deleteFlag then
+    reg.DeleteKey HKLM, path
+  end if
+
+  exportHklm = str
+end function
+
+' The CreateTextFile call below asks for a Unicode file, and this does write
+' out a Unicode byte-order mark as the first character, just like the REG tool
+' does (so that our script output is byte-for-byte identical, at least for the
+' registry types we support).
+
+function writeReg (FS, path, str)
+  dim out
+  set out = FS.CreateTextFile (path, true, true)
+
+  out.WriteLine "Windows Registry Editor Version 5.00"
+  out.WriteLine str
+end function
+
+' We want to keep the most recent N backup cabinet files in the target
+' directory. The simplest way to get the files matching a pattern and to
+' sort them by the created or last-modified date (probably the latter for
+' us) seems to be to use an in-memory ADO recordset and sort by a date
+' column.
+
+sub keepFiles (folderName, count)
+  ' Make the recordset with two columns, ,and copy the file information into it
+  dim folder
+  set folder = FS.GetFolder (folderName)
+
+  dim rs
+  set rs = CreateObject ("ADODB.RecordSet")
+
+  ' Using 256 for the "name" field length makes it variable-length instead of
+  ' fixed-width (which causes it to be padded with spaces)
+
+  rs.Fields.Append "name", 129, 256     ' 129 denotes character data
+  rs.Fields.Append "date", 135          ' 135 denotes a date
+
+  rs.Open
+  for each file in folder.Files
+    if strEq (Right (file.Name, 4), ".cab") then
+      rs.AddNew
+      rs("name") = file.Name
+      rs("date") = file.DateLastModified
+      rs.Update
+    end if
+  next
+
+  ' Sort the in-memory table by the "date" column
+
+  rs.Sort = "date desc"
+
+  ' Now read the sorted data and delete the files once we get past the
+  ' specified number to keep
+
+  do while not rs.EOF
+    if count > 0 then
+      count = count - 1
+    else
+      result = FS.DeleteFile (folderName & "\" & rs("name"))
+    end if
+    rs.MoveNext
+  loop
+  rs.Close
+
+end sub
+
+function defaultOutputPath (baseName)
+  ' Where we are going to put any temporary files, including the ones we are
+  ' going to use to build the final .CAB - we have a couple of choices here;
+  ' using something under the program files directory isn't ideal because it's
+  ' world-readable. I'll use a directory under the administrator's "My
+  ' Documents" folder.
+
+  dim xShell
+  set xShell = CreateObject("Shell.Application")
+  
+  dim myDocsFolder
+  set myDocsFolder = xShell.namespace (&H5&)
+
+  ' Windows 2000 Shell.Namespace doesn't support NewFolder out of the My
+  ' Documents object so we always use the more complicated method of resolving
+  ' through Self.Path
+
+  dim path
+  path = myDocsFolder.Self.Path & "\" & baseName
+  if not FS.FolderExists (path) then
+    FS.CreateFolder (path)
+  end if
+  set backupItem = myDocsFolder.ParseName (baseName)
+
+  defaultOutputPath = backupItem.Path
+end function
+
+' Since WScript 5.1 doesn't support the Named argument collection, split the
+' regular arguments collection into pieces
+
+function namedArguments ()
+  dim named
+  set named = CreateObject ("Scripting.Dictionary")
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) = "/" then
+      pos = InStr (arg, ":")
+      if pos > 0 then
+        named.Add Mid (arg, 2, pos - 2), Mid (arg, pos + 1)
+      else
+        named.Add Mid (arg, 2), ""
+      end if
+    end if
+  next
+
+  set namedArguments = named
+end function
+
+' Similar to the above, get the set of unnamed arguments for WScript 5.1
+
+function unnamedArguments ()
+  dim count
+  count = 0
+
+  dim arg
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      count = count + 1
+    end if
+  next
+
+  ' Now we now the array size, set it up.
+
+  dim output ()
+  redim output (count)
+
+  count = 0
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      output (count) = arg
+      count = count + 1
+    end if
+  next
+
+  unnamedArguments = output
+end function
+
+' Case-insensitive string equality
+
+function strEq (left, right)
+  strEq = StrComp (left, right, 1) = 0
+end function
+
+' Detect Vista (Windows 6 or later).
+
+function isVista
+  dim wmi
+  set wmi = GetObject ("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+
+  dim oses
+  set oses = wmi.execQuery ("select * from Win32_OperatingSystem")
+
+  isVista = false
+  dim os
+  for each os in oses
+    if os.BuildNumber >= 6000 then
+      isVista = true
+    end if
+  next
+end function
+
+' Modify a .LNK file to set the "run as Administrator" bit to on, which
+' can't be done through the documented scripting interfaces. This should
+' only be done for shortcuts that directly reference an .EXE target, since
+' the bit we modify only has meaning for that case.
+'
+' Prior to Windows Vista the flag means something else, so we should only
+' set this flag if we detect Vista
+
+sub makeRequireAdmin (path)
+  if not isVista () then
+    exit sub
+  end if
+
+  dim edit
+  set edit = WScript.CreateObject ("ADODB.Stream")
+  edit.Open
+  edit.Type = 1          ' set binary mode
+  edit.LoadFromFile path
+  edit.Position = 21
+
+  dim data
+  data = edit.Read (1)
+
+  data = ChrB (AscB (data) Or &H20)
+
+  edit.Position = 0
+  edit.Type = 2
+  
+  edit.Position = 21
+  edit.WriteText data
+
+  edit.Position = 0
+  edit.Type = 1         ' back to binary
+
+  edit.SaveToFile path, 2
+end sub
+
+' Re-launch the script interpreter using the 'runas' verb to the
+' Shell.Application object's ShellExecute method
+
+sub relaunchElevated
+  dim args
+  args = q & WScript.ScriptFullName & q
+
+  for each arg in WScript.Arguments
+    args = args & " " & q & arg & q
+  next
+
+  dim app
+  set app = WScript.CreateObject ("Shell.Application")
+  app.ShellExecute WScript.FullName, args, , "runas", 1
+end sub
+
+</script>
+</job>

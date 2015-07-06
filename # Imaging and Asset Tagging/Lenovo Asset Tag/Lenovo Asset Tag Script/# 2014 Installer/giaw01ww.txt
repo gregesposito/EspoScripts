@@ -1,0 +1,247 @@
+                                                                   Revision : 06
+--------------------------------------------------------------------------------
+Software name      Windows Utility To Read and Write Asset ID Information
+
+Support models     ThinkPad 11e
+                   ThinkPad L440, L540
+                   ThinkPad S1 Yoga
+                   ThinkPad T440, T440p, T440s
+                   ThinkPad T540p
+                   ThinkPad W540
+                   ThinkPad X1 Carbon (Machine Types: 20A7,20A8)
+                   ThinkPad X140e
+                   ThinkPad X240, X240s
+                   ThinkPad Yoga, Yoga 11e
+
+Operating Systems  Microsoft Windows 8.1  64-bit
+                   Microsoft Windows 8  64-bit
+                   Microsoft Windows 7  32-bit, 64-bit
+
+                   Refer to marketing materials to find out what computer models
+                   support which Operating Systems.
+
+Version            1.00
+
+
+--------------------------------------------------------------------------------
+WHAT THIS PACKAGE DOES
+
+  The utilities running on Windows to read out and store an asset ID data from
+  ThinkPad is to provide query and set feature of an asset ID and other
+  information.
+
+  To use this utility, you need logon to the Windows with administrative
+  privileges.
+
+  If this package has been installed, updating (overwrite-installing) this
+  package will fix problems, add new functions, or expand functions as noted
+  below.
+
+  This program is language independent and can be used with any language system.
+
+
+--------------------------------------------------------------------------------
+CHANGES IN THIS RELEASE
+  Version 1.00
+
+[Important updates]
+- Added support for Microsoft Windows 8.1 64-bit.
+
+[New functions or enhancements]
+- Added support for ThinkPad 11e, Yoga 11e.
+- Added support for ThinkPad X1 Carbon(Machine Types:20A7,20A8).
+- Added support for ThinkPad S1 Yoga, ThinkPad Yoga.
+- Added support for ThinkPad T440p.
+- Added support for ThinkPad T540p.
+- Added support for ThinkPad W540.
+- Added support for ThinkPad X140e.
+- Added support for ThinkPad L440, L540.
+
+[Problem fixes]
+  Nothing.
+
+
+--------------------------------------------------------------------------------
+DETERMINING WHICH VERSION IS INSTALLED
+
+  Version or Details tab from My Computer/Properties.
+  1. Locate WinAIA.exe from My Computer.
+  2. Right click the file and select Properties.
+  3. Depends on Windows OS, a tab "Versions" or "Details" will have file version
+     information.
+
+
+--------------------------------------------------------------------------------
+PROGRAM EXECUTION NOTES
+
+  WinAIAPackage is executed as:
+        WinAIA.exe [options] <command>
+
+  Where valid options are:
+        -silent
+        -output-file <filename>
+
+  And where <command> is one of the following:
+        -get [group[ group[ ...]]]
+        -set-from-file <filename>
+        -set group.field=value [group.field=value [...]]
+        -initialize
+        -help
+
+
+  Note: The filenames should be provided with a full path to the file. This is
+        because the program actually runs from out of the %TMP% folder, and so
+        the relative path is also from the %TMP% folder.
+
+  Note: The filename for input data has each entry on a separate line, in the
+        same group.field=value format.
+
+  Note: When the silent option is provided, there is no opportunity to abort
+        an update in the set modes. Without this option, there is a confirmation
+        dialog.
+
+  Note: By default, WinAIA.exe is copied to C:\DRIVERS\WINAIA.
+
+
+  Examples shown below should be entered on one line. They are broken up to fit
+  the 80 character width of a readme text file.
+
+  To get everything from the user information area (UIA):
+        WinAIA.exe -get
+
+  To get only the OWNERDATA group, silently, while saving the output to a file:
+        WinAIAPackage.exe -silent -output-file "\path\to\file\aia_output.txt"
+        -get OWNERDATA
+
+  To set the ASSET_NUMBER:
+        WinAIA.exe -set "USERASSETDATA.ASSET_NUMBER=ABC 123"
+
+  To set the LEASE_START_DATE
+        WinAIA.exe -set LEASEDATA.LEASE_START_DATE=20130101
+
+  To set one of the user-specifiable values:
+        WinAIA.exe -set "USERDEVICE.My Field=My Value"
+
+
+--------------------------------------------------------------------------------
+DEVICE GROUPS AND FIELDS
+
+  All options, group names and field names are case-insensitive, except for the
+  USERDEVICE group and the prefix value.
+
+  If no options are specified or an incorrect option is specified, then the
+  help text for the utility is displayed.
+
+  Here is a list of the valid group names and their associated fields:
+
+  USERDEVICE         <Field1>  -  These fields are defined by the user.
+                     :            The maximum number of user fields is five.
+                     <Fieldn>
+
+  PRELOADPROFILE     IMAGEDATE
+                     IMAGE
+
+  USERASSETDATA      PURCHASE_DATE
+                     LAST_INVENTORIED
+                     WARRANTY_END
+                     WARRANTY_DURATION
+                     AMOUNT
+                     ASSET_NUMBER
+
+  LEASEDATA          LEASE_START_DATE
+                     LESE_END_DATE
+                     LEASE_TERM
+                     LEASE_AMOUNT
+                     LESSOR
+
+  OWNERDATA          OWNERNAME
+                     DEPARTMENT
+                     LOCATION
+                     PHONE_NUMBER
+                     OWNERPOSITION
+
+  NETWORKCONNECTION  NUMNICS
+                     GATEWAY
+                     IPADDRESS[n]   (1<=n<=NUMNICS, default is 1)
+                     SUBNETMASK[n]
+                     SYSTEMNAME
+                     LOGINNAME
+
+  Note: The USERASSETDATA.ASSET_NUMBER is available through WMI by querying the
+        SMBIOSAssetTag field of the Win32_SystemEnclosure class.
+
+
+--------------------------------------------------------------------------------
+PROGRAM RETURN CODES (EXIT CODES)
+
+  This program does not have a return code.
+
+
+--------------------------------------------------------------------------------
+VERSION INFORMATION
+
+  The following versions have been released to date.
+
+  Package  WinAIA Version   Rev.  Issue Date
+  -------  ---------------  ----  ----------
+  1.00     2.0.0.0          06    2014/07/21
+  1.00     2.0.0.0          05    2014/06/13
+  1.00     2.0.0.0          04    2014/02/14
+  1.00     2.0.0.0          03    2013/12/18
+  1.00     2.0.0.0          02    2013/11/29
+  1.00     2.0.0.0          01    2013/08/30
+
+  Note: Revision number (Rev.) is for administrative purpose of this README
+        document and is not related to software version. There is no need to
+        upgrade this software when the revision number changes.
+
+  To check the version of software, refer to the Determining which version is
+  installed section.
+
+
+Summary of Changes
+
+  Where: <   >        Package version number
+         [Important]  Important update
+         (New)        New function or enhancement
+         (Fix)        Correction to existing function
+
+<1.00>
+- (New) Added support for ThinkPad L440, L540.
+
+<1.00>
+- [Important] Added support for Microsoft Windows 8.1 64-bit.
+- (New) Added support for ThinkPad 11e,Yoga 11e.
+
+<1.00>
+- Removed unsupported models.
+
+<1.00>
+- (New) Added support for ThinkPad X1 Carbon(Machine Types:20A7,20A8).
+
+<1.00>
+- (New) Added support for ThinkPad S1 Yoga, ThinkPad Yoga.
+- (New) Added support for ThinkPad T440p.
+- (New) Added support for ThinkPad T540p.
+- (New) Added support for ThinkPad W540.
+- (New) Added support for ThinkPad X140e.
+
+<1.00>
+- (New) Initial release.
+
+
+--------------------------------------------------------------------------------
+LIMITATIONS
+
+  Nothing.
+
+
+--------------------------------------------------------------------------------
+TRADEMARKS
+
+* Lenovo and ThinkPad are registered trademarks of Lenovo.
+
+* Microsoft and Windows are registered trademarks of Microsoft Corporation.
+
+Other company, product, and service names may be registered trademarks,
+trademarks or service marks of others.

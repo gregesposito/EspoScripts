@@ -1,0 +1,8 @@
+cls
+@echo off
+ECHO
+CD C:\PROGRAM FILES (X86)\MICROSOFT OFFICE\OFFICE15
+ECHO Performing Office 2013 Activation...
+START /WAIT CSCRIPT OSPP.VBS /ACT
+ECHO.
+pause

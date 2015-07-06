@@ -1,0 +1,808 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without
+' modification, are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its
+'   contributors may be used to endorse or promote products derived from this
+'   software without specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'----------------------------------------------------------------------------
+'
+' Intended to become a companion to the backupdb.wsf backup script I wrote: the
+' hard part of this is dealing with the fact that on Windows 2000 there is no
+' easy way to get data in and out of the registry, so this script contains code
+' to parse the .REG file format and use the WMI StdRegProv class to merge the
+' results into the registry. Ugly, but it more-or-less works.
+'
+' Actually, one signal advantage of doing it this way is that it's possible to
+' massage the input in some useful ways. If I want to import only a subset of
+' the .REG data I can by passing in a prefix, and in addition I can rewrite the
+' prefix to do my own WOW64 translation on keys that need it.
+'
+' - Nigel Bree, nigel.bree@gmail.com
+
+<job id="GSS Restore Utility">
+<script language="VBScript">
+  ' Initial Windows 2000 uses WScript 5.1, which is pretty awful. It's tempting
+  ' to nag people to upgrade, but for now we won't since I've been able to find
+  ' at least vaguely tractable workarounds for all its defects.
+  '
+  ' The free WSH 5.7 update can be gotten from
+  ' http://www.microsoft.com/downloads/results.aspx?freetext=Windows%20Script%205.7&DisplayLang=en
+
+  if WScript.Version = "5.1" then
+    badScript = true
+  end if
+
+  if badScript then
+    set switches = namedArguments ()
+    unnamed = unnamedArguments ()
+    unnamedCount = UBound (unnamed) + 1
+  else
+    set switches = WScript.Arguments.Named
+    set unnamed = WScript.Arguments.Unnamed
+
+    unnamedCount = unnamed.Count
+  end if
+
+  if switches.Exists("?") then
+    lf = Chr (10)
+    WScript.Echo "GSS 2.0 and 1.1 database restore tool" & lf & lf & _
+                 "Drag and drop a backup cabinet or directory to this script to restore it"
+    WScript.Quit 0
+  end if
+
+  quiet = switches.Exists ("quiet")
+
+  if switches.Exists ("name") then
+    cabName = switches.Item ("name")
+  elseif switches.Exists ("auto") then
+    cabName = "Open Latest Backup.lnk"
+  end if
+
+  ' Various basic pieces of setup
+
+  q = Chr (34)
+  lf = Chr (10)
+
+  set Shell = WScript.CreateObject ("WScript.Shell")
+  set FS = WScript.CreateObject ("Scripting.FileSystemObject")
+  const ForReading = 1, ForWriting = 2, ForAppending = 8
+
+  ' Set up to query the registry and create some quoted strings referencing
+  ' some useful paths
+
+  software = "HKLM\Software\"
+  on error resume next
+  ghostPath = Shell.RegRead (software & "Symantec\InstalledApps\Ghost")
+
+  if ghostPath = "" then
+    wow64 = "Wow6432Node\"
+    software = software & wow64
+    ghostPath = Shell.RegRead (software & "Symantec\InstalledApps\Ghost")
+  end if
+  on error goto 0
+
+  if ghostPath = "" then
+    WScript.Echo "Ghost Solution Suite doesn't appear to be installed on this machine - please install it first"
+    WScript.Quit 1
+  end if
+
+  ' Vista elevation check: can we access privkey.crt? If it exists but we can't
+  ' open it, then re-launch ourselves. This file is maintained with a special
+  ' ACL which is why this test works.
+
+  crt = ghostPath & "\privkey.crt"
+  if FS.FileExists (crt) then
+    dim reader
+
+    on error resume next
+    set reader = FS.OpenTextFile (crt, 1)
+    on error goto 0
+
+    if not IsObject (reader) then
+      if isVista then
+        relaunchElevated
+      else
+        WScript.Echo "Cannot run this script as a non-administrator"
+      end if
+      WScript.Quit 1
+    end if
+
+    set reader = nothing
+  end if
+
+  serverExe = ghostPath & "\ngserver.exe"
+
+  dbeng = Shell.RegRead(software & "Symantec\Symantec Ghost\InstallDirectory\dbeng")
+  backupExe = q & dbeng & "\dbbackup" & q
+
+  dbPath = Shell.RegRead (software & "Symantec\Symantec Ghost\InstallDirectory\db")
+  dataPath = Shell.RegRead (software & "Symantec\Symantec Ghost\InstallDirectory\data")
+
+  ' Look initially for the backup .cab in the same place the backupdb.wsf script
+  ' puts it.
+
+  set xShell = CreateObject("Shell.Application")
+  set myDocsFolder = xShell.namespace (&H5&)
+
+  ' If we get passed an unnamed parameter, work out if it's a file or a folder.
+  if unnamedCount > 0 then
+    path = unnamed (0)
+    if FS.FolderExists (path) then
+      inputPath = path
+    elseif FS.FileExists (path) then
+      backupFile = path
+    else
+      WScript.Echo path & " does not appear to be a folder or file containing a GSS backup"
+      WScript.Quit 1
+    end if
+  end if
+
+  if switches.Exists ("path") then
+    inputPath = switches.Item ("path")
+  elseif inputPath = "" then
+    set backupFolder = myDocsFolder.ParseName ("GSSBackup")
+    if not backupFolder is Nothing then
+      inputPath = backupFolder.Path
+    end if
+  end if
+
+  ' Look to see if the input is a link, since by default we actually find the
+  ' input CAB by indirecting from a shortcut named "Latest Backup" (the backup
+  ' script now maintains a rolling cycle, so the shortcut always refers to the
+  ' most recent).
+
+  link = inputPath & "\" & cabName
+  if FS.FileExists (link) and strEq (Right (link, 4), ".lnk") then
+    set shortcut = Shell.CreateShortcut (link)
+    backupFile = shortcut.TargetPath
+  end if
+
+  extractPath = ghostPath & "\extract"
+
+  ' If we don't find it there, ask where we can get it from
+
+  do
+    if backupFile = "" and inputPath <> "" then
+      backupFile = inputPath & "\" & cabName
+    end if
+
+    regFile = inputPath & "\passwords.reg"
+    pubFile = inputPath & "\pubkey.crt"
+    privFile = inputPath & "\privkey.crt"
+    dbFile = inputPath & "\SYMANTECGHOST.DB"
+
+    if FS.FileEXists (backupFile) then
+      exit do
+    elseif FS.FileExists (regFile) then
+      backupFile = ""
+      exit do
+    end if
+
+    backupFile = browseCabinet (inputPath)
+
+    if strEq (Right (backupFile, 4), ".lnk") then
+      set shortcut = Shell.CreateShortcut (link)
+      backupFile = shortcut.TargetPath
+    end if
+ 
+   inputPath = Left (backupFile, InStrRev (backupFile, "\"))
+    if Not strEq (Right (backupFile, 4), ".cab") then
+       backupFile = ""
+    end if
+  loop
+
+  takeBackup
+
+  '---------------------------------------------------------------------------
+  ' Extract the passwords.reg file from the backup cabinet. The "extract"
+  ' command is less than ideal - in particular it will only extract files
+  ' from a multi-file CAB into a directory and it extracts them flat with
+  ' no provision for recreating the folder structure.
+  '
+  ' It also tends to return a result code of 0 whether it succeeds or not,
+  ' which means using Shell.Exec() and parsing the output or checking that
+  ' it did what we asked afterwards, which naturally is easier.
+
+  if not FS.FolderExists (extractPath) then
+    result = FS.CreateFolder (extractPath)
+  end if
+
+  ' Extract the data from the source cabinet if needed
+
+  if backupFile <> "" then
+    regFile = extract (backupFile, "passwords.reg", extractPath)
+    pubFile = extract (backupFile, "pubkey.crt", extractPath)
+    privFile = extract (backupFile, "privkey.crt", extractPath)
+    dbFile = extract (backupFile, "db\SYMANTECGHOST.DB", extractPath)
+  end if
+
+  ' Kill any running console process (we can't really stop it properly,
+  ' alas) using WMI since Win2k doesn't have the command-line tools
+  ' for this like WinXP does.
+
+  killProcess "ngcons.exe"
+
+  ' There is a bug specific to build 1533 (of the builds we've actually released,
+  ' at least) which requires that both the tray and service be uninstalled and
+  ' then reinstalled to allow the new DB credentials to be properly read.
+
+  if FS.GetFileVersion (serverExe) >= "11.0.1.1533" And _
+     FS.GetFileVersion (serverExe) <= "11.0.1.1536" then
+    reinstall = true
+
+    result = Shell.Run (q & ghostPath & "\ngtray.exe" & q & " -uninstall", 2, true)
+    result = Shell.Run (q & serverExe & q & " -uninstall", 2, true)
+  else
+    result = Shell.Run (q & serverExe & q & " -stop", 2, true)
+  end if
+
+  ' Apply the registry data now, after the currently running server has stopped.
+  ' This has to be done afer the above because the workaround for 1533-ish
+  ' builds of using -uninstall actually can clear out this section of the
+  ' registry. This was masked on some systems because if the ngtray.exe uninstall
+  ' fully completed before the ngserver uninstall, the values would actually get
+  ' successfully imported before being re-exported.
+
+  set stream = FS.OpenTextFile (regFile, ForReading, False, - 1)
+
+  importHklm stream, "Software\Symantec\Symantec Ghost\NGServer", _
+             "Software\" & wow64 & "Symantec\Symantec Ghost\NGServer"
+  stream.Close
+
+  ' Move the .CRT files into place
+
+  if backupFile <> "" then
+    FS.DeleteFile (regFile)
+    moveFile pubFile, ghostPath & "\pubkey.crt"
+    moveFile privFile, ghostPath & "\privkey.crt"
+  else
+    copyFile pubFile, ghostPath & "\pubkey.crt"
+    copyFile privFile, ghostPath & "\privkey.crt"
+  end if
+
+  ' Wait for the database service to go away
+
+  do while isRunning ("dbserv.exe")
+    WScript.Sleep 1
+  loop
+
+  ' Now that the database is stopped, move the backup database into place.
+
+  if backupFile <> "" then
+    moveFile dbFile, dbPath & "\SYMANTECGHOST.DB"
+  else
+    copyFile dbFile, dbPath & "\SYMANTECGHOST.DB"
+  end if
+  ' We don't need the extraction directory any more
+
+  FS.DeleteFolder extractPath
+
+  ' Restart the services and associated pieces - if reinstalling, it is critical
+  ' that the -install options be used from the current directory where the code
+  ' lives, so we change directory to there. However, WScript 5.1 doesn't allow
+  ' us to change directories.
+
+  if reinstall then
+    result = runIn (ghostPath, serverExe, "-installonly", 2, true)
+    result = runIn (ghostPath, ghostPath & "\ngtray.exe", "-install", 2, false)
+  end if
+  result = Shell.Run (q & serverExe & q, 2, true)
+
+  if not quiet then
+    if backupFile <> "" then
+      text = "Backup cabinet " & backupFile & " restored"
+    else
+      text = "Backup directory " & inputPath & " restored"
+    end if
+
+    WScript.Echo text
+  end if
+
+  WScript.Quit result
+
+function extract (cab, name, dest)
+  dim window
+  window = 2
+
+  dim expand
+  expand = Shell.ExpandEnvironmentStrings ("%WINDIR%\system32\expand.exe")
+
+  dim vista
+  vista = FS.GetFileVersion (expand) >= "6.0.6000"
+
+  expand = "expand.exe " & q & cab & q & " -F:"
+
+  dim pos
+  pos = InStr (name, "\")
+
+  dim final
+  if pos > 0 then
+    final = dest & Mid (name, pos)
+  else
+    final = dest & "\" & name
+  end if
+
+  ' expand.exe in vista is not compatible in command-line behaviour with
+  ' earlier versions, work around this. It doesn't accept a path in the
+  ' -F: switch but will extract the file with the matching name *with*
+  ' that path attached, exactly the reverse of how it's worked for over
+  ' 15 years
+
+  if vista and pos > 0 then
+    final = dest & "\" & name
+    name = Mid (name, pos + 1)
+  end if
+
+  dim result
+  result = Shell.Run (expand & name & " " & q & dest & q, _
+                      window, true)
+
+  if result <> 0 or not FS.FileExists (final) then
+    WScript.Echo "Failed to extract data file """ & name & """ from input cabinet"
+    WScript.Quit 1
+  end if
+
+  extract = final
+end function
+
+' Because the "reg" command-line tool appeared in Windows XP and some GSS users
+' are running Windows 2000, we emulate the workings of the "reg" (or regedit)
+' tool's "import" function here.
+
+sub importHklm (stream, inPath, outPath)
+  dim reg
+  set reg = GetObject ("winmgmts:\\.\root\default:StdRegProv")
+
+  HKLM = &H80000002
+
+  ' Top-level part - hunt for lines beginning with '[' meaning they contain
+  ' sections of registry. Then once we find one, see if it matches a path
+  ' prefix we want to import. Transform that path to the input path we want
+  ' to use, and then process the inner section containing the values.
+
+  inPath = "[HKEY_LOCAL_MACHINE\" & inPath
+
+  do while not stream.AtEndOfStream
+    ' For now just work with the plain input, but we may want to case-fold
+    ' this part during some of the matching process to make it more robust
+    ' in future.
+
+    dim str
+    str = stream.ReadLine ()
+
+    do
+      ' We want to handle input from either 64-bit or 32-bit systems, so remove
+      ' any part of a path that says "\Wow6432Node".
+
+      str = Replace (str, "Wow6432Node\", "")
+      if Left (str, Len (inPath)) = inPath then
+        dim rest
+        rest = Mid (str, Len (inPath) + 1)
+        rest = Left (rest, Len (rest) - 1)
+
+        str = importKey (stream, HKLM, outPath & rest, reg)
+      else
+        exit do
+      end if
+    loop until str = ""
+  loop
+end sub
+
+function importKey (stream, root, path, reg)
+  dim result
+
+  ' First thing we do here is ensure that the target key exists. CreateKey will make
+  ' all the keys along a path for us
+  result = reg.CreateKey (root, path)
+
+  do while not stream.AtEndOfStream
+    dim str
+    str = stream.ReadLine()
+
+    select case Left (str, 1)
+    case "["
+      ' This tells us we've hit the end of the file section and it's time to
+      ' work on another key - return the key name so the outer routine can
+      ' chew on it.
+
+      importKey = str
+      exit function
+
+    case "@"
+       ' Special case of the default value, which has a blank string for a
+       ' name in the APIs we use.
+
+       result = importValue ("", Mid (str, 3), stream, root, path, reg)
+
+    case """"
+       ' A named value, quoted so we have to unescape any nested double-quote
+       ' mark in the value name
+
+       dim pos
+       pos = InStr (str, """=")
+
+       dim name
+       name = Mid (str, 2, pos - 2)
+       name = Replace (name, "\""", """")
+       name = Replace (name, "\\", "\")
+       result = importValue (name, Mid (str, pos + 2), stream, root, path, reg)
+
+    end select
+  loop
+end function
+
+' Figure out what the kind of the value is so we can begin to pick it apart
+
+function importValue (name, value, stream, root, path, reg)
+  dim result
+
+  if Left (value, 1) = """" then
+    ' If the value doesn't end in a double-quote then it may well have an
+    ' embedded newline, so read a continuation line.
+
+    value = Mid (value, 2)
+
+    do while Right (value, 1) <> """"
+      if stream.AtEndOfStream then
+        exit function
+      end if
+      value = value + stream.ReadLine ()
+    loop
+
+    value = Left (value, Len (value) - 1)
+    value = Replace (value, "\""", """")
+    value = Replace (value, "\\", "\")
+ 
+    result = reg.SetStringValue (root, path, name, value)
+  elseif strEq (Left (value, 4), "hex:") then
+    ' In this case the value can be spread over multiple lines using a
+    ' backslash-escape at the end of the line
+
+    value = Mid (value, 5)
+
+    do while Right (value, 1) = "\"
+      if stream.AtEndOfStream then
+        exit function
+      end if
+      value = Left (value, Len (value) - 1) + Trim (stream.ReadLine ())
+    loop
+
+    result = reg.SetBinaryValue (root, path, name, readBinaryArray (value))
+  elseif strEq (Left (value, 6), "dword:") then
+    value = Mid (value, 7)
+    result = reg.SetDWORDValue (root, path, name, readHex (value))
+  else
+    WScript.echo "failed to match " & value
+  end if
+  
+  if result <> 0 then
+    WScript.Echo "Failed to set " & path & " and " & name & " " & Hex (result)
+  end if
+
+  importValue = result
+end function
+
+' Process hex string into a number
+
+function readHex (value)
+  dim total
+  total = 0
+
+  value = Trim (value)
+
+  dim i
+  dim digit
+  for i = 1 to Len (value)
+    digit = Asc (Mid (value, i, 1)) 
+    if digit >= 97 then         ' lowercase a-f
+      digit = digit - 87
+    elseif digit >= 65 then     ' uppercase A-F
+      digit = digit - 55
+    elseif digit >= 48 then     ' 0-9
+      digit = digit - 48
+    end if
+    if digit >=16 then
+      exit for
+    end if
+
+    total = total * 16 + digit
+  next
+  
+  readHex = total
+end function
+
+' Build a binary text string out of comma-delimited list of hex bytes
+
+function readBinaryArray (value)
+  dim values
+  values = Split (value, ",")
+
+  dim item
+  dim total
+  for each item in values
+    total = total & ChrB (readHex (item))
+  next
+
+  ' Now we have an array of bytes, convert it into an actual array - since we
+  ' have to build an array using Redim it seems easier to use a temporary byte
+  ' string so we can just make the array in one hit.
+
+  dim a
+  a = LenB (total)
+
+  dim output ()
+  redim output (a - 1)
+
+  dim i
+  for i = 1 to LenB (total)
+    output (i - 1) = AscB (MidB (total, i, 1))
+  next
+
+  readBinaryArray = output
+end function
+
+' Use WMI to terminate a process by executable name
+
+function killProcess (name)
+  dim wmi
+  set wmi = GetObject ("winmgmts:{impersonationLevel=impersonate,(Debug)}!\\.\root\cimv2")
+
+  dim procs
+  set procs = wmi.ExecQuery ("select * from Win32_Process where Name='" & name & "'")
+
+  dim result
+  result = 0
+
+  dim proc
+  for each proc in procs
+    result = proc.Terminate ()
+  next
+
+  killProcess = result
+end function
+
+' Use WMI to find if a process is running by executable name
+
+function isRunning (name)
+  dim wmi
+  set wmi = GetObject ("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+
+  dim procs
+  set procs = wmi.ExecQuery ("select * from Win32_Process where Name='" & name & "'")
+
+  dim result
+  result = false
+
+  dim proc
+  for each proc in procs
+    result = true
+  next
+
+  isRunning = result
+end function
+
+' Stop a service by name
+
+sub stopService (name)
+  dim wmi
+  set wmi = GetObject ("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+
+  dim services
+  set services = wmi.execQuery ("select * from Win32_Service where Name='" & name & "'")
+
+  dim service
+  for each service in services
+    service.StopService ()
+  next
+end sub
+
+sub moveFile (source, dest)
+  if FS.FileExists (dest) then
+    FS.DeleteFile dest, true
+  end if
+  FS.MoveFile source, dest
+end sub
+
+sub copyFile (source, dest)
+  if FS.FileExists (dest) then
+    FS.DeleteFile dest, true
+  end if
+  FS.CopyFile source, dest
+end sub
+
+' To deal with WSH 5.1's inability to handle the current directory that
+' the script runs in, indirect through either a temporary batch file or
+' a shortcut depending on whether we need to wait or not (since we can't
+' wait for a shortcut, and can't delete a batch file before it's done,
+' we have to use different techniques in each case).
+
+function runIn (dir, command, args, window, wait)
+  if WScript.Version <> "5.1" then
+    Shell.CurrentDirectory = dir
+    result = Shell.Run (q & command & q & " " & args, window, wait)
+  elseif wait then
+    set out = FS.CreateTextFile ("temp.bat")
+    out.WriteLine ("CD " & q & dir & q)
+    out.WriteLine (q & command & q & " " & args)
+    out.Close
+
+    result = Shell.Run ("temp.bat", window, true)
+
+    FS.DeleteFile ("temp.bat")
+  else
+    set temp = Shell.CreateShortcut ("temp.lnk")
+    temp.TargetPath = command
+    temp.Arguments = args
+    temp.WindowStyle = window
+    temp.WorkingDirectory = dir
+    temp.save
+
+    ' Run the thing we just made
+    result = Shell.Run ("temp.lnk", window, false)
+
+    FS.DeleteFile ("temp.lnk")
+  end if
+
+  runIn = result
+end function
+
+' Since WScript 5.1 doesn't support the Named argument collection, split the regular
+' arguments collection into pieces
+
+function namedArguments ()
+  set named = CreateObject ("Scripting.Dictionary")
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) = "/" then
+      pos = InStr (arg, ":")
+      if pos > 0 then
+        named.Add Mid (arg, 2, pos - 2), Mid (arg, pos + 1)
+      else
+        named.Add Mid (arg, 2), ""
+      end if
+    end if
+  next
+
+  set namedArguments = named
+end function
+
+' Similar to the above, get the set of unnamed arguments for WScript 5.1
+
+function unnamedArguments ()
+  count = 0
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      count = count + 1
+    end if
+  next
+
+  ' Now we now the array size, set it up.
+
+  dim output ()
+  redim output (count)
+
+  count = 0
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      output (count) = arg
+      count = count + 1
+    end if
+  next
+
+  unnamedArguments = output
+end function
+
+
+' Case-insensitive string equality
+
+function strEq (left, right)
+  strEq = StrComp (left, right, 1) = 0
+end function
+
+' Browse for a cabinet file
+
+function browseCabinet (initial)
+  on error resume next
+  set dialog = CreateObject("UserAccounts.CommonDialog")
+  if Err > 0 then
+    set dialog = Nothing
+  end if
+  on error goto 0
+
+  if dialog is Nothing then
+    ' Probably on Win2k where we can't open this dialog
+
+    output = InputBox ("Enter the pathname of the cabinet file to restore", _
+                       "GSS Database Restore")
+  else
+    dialog.Filter = "Cabinet Files|*.cab|Unpacked backup|passwords.reg"
+    dialog.InitialDir = initial
+    result = dialog.ShowOpen
+
+    if result = 0 then
+      Wscript.Quit 2
+    else
+      output = dialog.FileName
+    end if
+  end if
+
+  if output = "" then
+    WScript.Quit 1
+  end if
+
+  browseCabinet = output
+end function
+
+
+'---------------------------------------------------------------------------
+' Take an emergency undo backup of the current state.
+' No amount of warning dialogs will prevent someone from restoring over their
+' work unintentionally and it's just better to have some form of undo instead
+' of confirmation
+
+sub takeBackup
+  backupScript = Replace (WScript.ScriptFullName, "restore", "backup")
+
+  if FS.FileExists (backupScript) then
+    result = Shell.Run (q & backupScript & q & " /undo:Restore", 2, true) 
+
+    if result <> 0 then
+      result = MsgBox ("Could not create undo cabinet, proceed with restore?", 1)
+      if result <> 1 then
+        WScript.Quit 1
+      end if
+    end if
+
+  elseif not quiet then
+    ' If we don't have the backup script sitting next to us, nag
+
+    result = MsgBox ("Cannot find the backup script to create an undo file; " & _
+		     "restoring will replace your current database." & lf & lf & _
+		     "Are you sure you want to restore " & q & backupFile & q & "?", 1)
+
+    if result <> 1 then
+      WScript.Quit 1
+    end if
+  end if
+end sub
+
+' Re-launch the script interpreter using the 'runas' verb to the
+' Shell.Application object's ShellExecute method
+
+sub relaunchElevated
+  dim args
+  args = q & WScript.ScriptFullName & q
+
+  for each arg in WScript.Arguments
+    args = args & " " & q & arg & q
+  next
+
+  dim app
+  set app = WScript.CreateObject ("Shell.Application")
+  app.ShellExecute WScript.FullName, args, , "runas", 1
+end sub
+
+</script>
+</job>

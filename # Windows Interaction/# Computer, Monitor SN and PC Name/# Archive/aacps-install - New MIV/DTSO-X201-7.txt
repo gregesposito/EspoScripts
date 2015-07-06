@@ -1,0 +1,6 @@
+Installer: ddd 
+Room: ddd 
+Computer Name: DTSO-X201-7
+Computer Serial Number: R96NA9G
+Monitor Name      : 
+Serial Number     : 

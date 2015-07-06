@@ -1,0 +1,392 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without modification,
+' are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its contributors
+'   may be used to endorse or promote products derived from this software without
+'   specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+' ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+' WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+' IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+' INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+' NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+' PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+' WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'-----------------------------------------------------------------------------------
+'
+' Look at the delclients.wsf script for general details of how the database is
+' organized for this to work.
+
+<job id="GSS Folder Cleanup Utility">
+<script language="VBScript">
+  ' Some basic setup - this script requires a 32-bit execution environment
+
+  q = Chr (34)
+  set Shell = WScript.CreateObject ("WScript.Shell")
+  set Env = Shell.Environment ("Process")
+  arch = Env ("PROCESSOR_ARCHITECTURE")
+
+  if arch <> "x86" then
+    host = Replace (WScript.FullName, "System32", "SysWow64", 1, -1, 1)
+    if host = WScript.FullName then
+      WScript.Quit 1
+    end if
+
+    args = q & WScript.ScriptFullName & q
+    for each arg in WScript.Arguments
+      args = args & " " & q & arg & q
+    next
+
+    Shell.Run host & " " & args, 0, true
+    WScript.Quit 1
+  end if
+
+  if WScript.Version = "5.1" then
+    badScript = true
+  end if
+
+  if badScript then
+    set switches = namedArguments ()
+    unnamed = unnamedArguments ()
+    unnamedCount = UBound (unnamed) + 1
+  else
+    set switches = WScript.Arguments.Named
+    set unnamed = WScript.Arguments.Unnamed
+
+    unnamedCount = unnamed.Count
+  end if
+
+  crlf = Chr (13) & Chr (10)
+  set FS = WScript.CreateObject ("Scripting.FileSystemObject")
+
+  if unnamedCount > 0 then
+    find = unnamed (0)
+  else
+    find = InputBox ("Empty folder name pattern to find" & crlf & _
+                     "hit ESC or cancel to quit", "Folder cleanup", "pattern")
+  end if
+
+  if find = "" then
+    WScript.Quit 0
+  end if
+
+  quiet = switches.Exists ("quiet")
+
+  ' Access the Configuration Server service's root COM scripting object
+
+  set server = CreateObject("ConfigServer.Application")
+
+  ' Get the database configuration object from the configuration server
+
+  set dbInfo = server.ConfigDatabase
+
+  ' Obtain the current database username and password
+
+  user = dbInfo.Username
+  pass = dbinfo.Password
+
+  '---------------------------------------------------------------------------
+  ' This script doesn't take an emergency backup, since we're only deleting
+  ' empty folders.
+
+  ' Form the ODBC connection string to the database - this is a 32-bit connection
+  ' string, not usable on 64-bit systems (which also don't have the requisite ADODB
+  ' providers for doing anything useful, either).
+
+  conn = "DSN=Symantec Ghost;UID=" & user & ";PWD=" & pass
+
+  ' Begin by getting a connection to the database
+
+  set adoConn = CreateObject ("ADODB.Connection")
+  adoConn.Open (conn)
+  adoConn.BeginTrans
+
+  ' Begin by matching the folder names and getting their database ID codes,
+  ' before doing the delete steps that relate to non-Machine objects. We
+  ' only work with empty folders for now, so as not to have to worry about
+  ' cascading deletes of inner folders and machines
+
+  set shortcuts = filterFolders (find)
+  if shortcuts.Count = 0 then
+    WScript.Echo "No matching empty folders found"
+    WScript.Quit 1
+  end if
+
+  ' Now clean up all the things that refer to those shortcuts
+
+  shortcutSet = keysToSet (shortcuts)
+
+  x = clean_decommission () + _
+      clean_WMIReport (shortcutSet) + _
+      clean_CustomConfigs (shortcutSet) + _
+      clean_Tasks (shortcutSet) + _
+      clean_Folders (shortcutSet)
+
+  WScript.Echo shortcuts.Count & " empty folder(s) with " & x & " database records cleaned"
+
+  ' Notify the configuration Server of the changes that we've made, which
+  ' it handles by re-reading everything.
+
+  adoConn.CommitTrans
+  server.RefreshDatabase
+  WScript.Quit 0
+
+' Since WScript 5.1 doesn't support the Named argument collection, split the regular
+' arguments collection into pieces
+
+function namedArguments ()
+  set named = CreateObject ("Scripting.Dictionary")
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) = "/" then
+      pos = InStr (arg, ":")
+      if pos > 0 then
+        named.Add Mid (arg, 2, pos - 2), Mid (arg, pos + 1)
+      else
+        named.Add Mid (arg, 2), ""
+      end if
+    end if
+  next
+
+  set namedArguments = named
+end function
+
+' Similar to the above, get the set of unnamed arguments for WScript 5.1
+
+function unnamedArguments ()
+  count = 0
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      count = count + 1
+    end if
+  next
+
+  ' Now we now the array size, set it up.
+
+  dim output ()
+  redim output (count)
+
+  count = 0
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      output (count) = arg
+      count = count + 1
+    end if
+  next
+
+  unnamedArguments = output
+end function
+
+' Extract a string from the dictionary which combines the strings into a
+' set literal suitable for using with the IN operator.
+
+function keysToSet(dict)
+  dim str
+  str = ""
+
+  for each id in dict.keys
+    if str = "" then
+      str = "("
+    else
+      str = str & ","
+    end if
+
+    str = str & id
+  next
+
+  if str = "" then
+    str = "()"
+  else
+    str = str & ")"
+  end if
+
+  keysToSet = str
+end function
+
+' Extract a string from the dictionary which combines the value strings
+' into a set literal suitable for using with the IN operator.
+
+function valuesToSet(dict)
+  dim str
+  str = ""
+
+  for each id in dict.keys
+    if str = "" then
+      str = "("
+    else
+      str = str & ","
+    end if
+    str = str & dict (id)
+  next
+
+  if str = "" then
+    str = "()"
+  else
+    str = str & ")"
+  end if
+
+  valuesToSet = str
+end function
+
+' Create a query object
+
+function query (sql)
+  set adoRecord = CreateObject ("ADODB.RecordSet")
+  adoRecord.ActiveConnection = adoConn
+
+  adoRecord.Open (sql)
+  set query = adoRecord
+end function
+
+' Perform a one-shot execution
+
+function execSql (sql)
+  rows = 0
+  adoConn.Execute sql, rows
+  execSql = rows
+end function
+
+' Build a list of MachineView.ID values for empty folders that match the
+' given name.
+'
+' To get the set of empty folders, self-join the table to itself looking
+' for rows that aren't referenced as the "ParentID" of anything else.
+' (RootIDs don't really matter, they are largely the result of design
+' strangeness in the console UI, so that a shortcut to a machine cannot
+' appear more than once underneath a root-level folder).
+
+function filterFolders (pattern)
+  ' Create the RegExp object to do the matching
+
+  dim re
+  set re = new RegExp
+  re.Pattern = find
+  re.IgnoreCase = true
+
+  ' Create a dictionary to remember the view and machine table IDs.
+
+  dim dict
+  set dict = CreateObject ("Scripting.Dictionary")
+
+  ' Look in all the returned rows for the pattern the user asked for
+
+  dim record
+  set record = query ("select l.Description, l.ID " & _
+                      "from MachineView as l left join MachineView as r on l.id = r.ParentID " & _
+                      "where r.id is null and l.machineId is null and l.ID > 1")
+
+  do while not record.EOF
+    dim desc
+    desc = record ("Description")
+
+    dim id
+    id = record ("ID")
+
+    if re.Test (desc) then
+      ' We got a hit; record the ID in a dictionary object
+      ' for future reference
+
+      dim x
+      x = CStr (id)
+
+      if not dict.Exists(x) then
+        dict.Add x, desc
+      end if
+    end if
+
+    record.MoveNext
+  loop
+
+  record.Close
+  
+  set filterFolders = dict
+end function
+
+
+' In addition to the main cleanup tasks, there is a special one we do.
+' The GSS2.5 console has a design fault where "Machine Decommission" tasks
+' are created as temporary "template" tasks, but for some inexplicable
+' reason are not displayed (they are filtered out of the "Executed template
+' tasks" pseudofolder.
+'
+' This can leave behind immortal and invisible task records that prevent
+' folders from being deleted. This is an attempt to at least vaguely clean
+' up the damage caused by this.
+
+function clean_decommission
+  dim x1
+  x1 = execSql ("delete From MachineDecommission")
+
+  dim x2
+  x2 = execSql ("delete from TaskView from Task " & _
+                "where TaskView.TaskID = Task.ID and Task.Steps = 16384")
+
+  dim x3
+  x3 = execSql ("delete from TaskOp from Task " & _
+                "where TaskOP.TaskID = Task.ID and Task.Steps = 16384")
+
+  dim y
+  y = execSql ("delete from Task " & _
+               "where Task.Steps = 16384")
+
+  clean_decommission = x1 + x2 + x3 + y
+end function
+
+'--------------------------------------------------------------------
+' The various cleanup functions to purge the client data.
+
+function clean_WMIReport (shortcuts)
+  dim x
+  x = execSql ("delete from WMIReport " & _
+               "where MachineViewID IN " & shortcuts)
+
+  clean_WMIReport = x
+end function
+
+function clean_CustomConfigs (shortcuts)
+  dim x
+  x = execSql ("delete from TaskOp " & _
+               "where TaskStepId = 18 " & _
+               " and MachineViewId IN " & shortcuts)
+
+  clean_CustomConfigs = x
+end function
+
+function clean_Tasks (shortcuts)
+  dim x
+  x = execSql ("update TaskOp " & _
+               "set MachineViewId = 1 " & _
+               "where MachineViewId IN " & shortcuts)
+
+  dim y
+  y = execSql ("update Task " & _
+               "set MachineViewId = 1 " & _
+               "where MachineViewId IN " & shortcuts)
+
+  clean_Tasks = x + y
+end function
+
+function clean_Folders (shortcuts)
+  dim x
+  x = execSql ("delete from MachineView " & _
+               "where ID IN  " & shortcuts)
+
+  clean_Folders = x
+end function
+
+</script>
+</job>
+

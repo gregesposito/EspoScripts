@@ -1,0 +1,119 @@
+
+Windows IP Configuration
+
+   Host Name . . . . . . . . . . . . : DALY-ED800G1-04
+   Primary Dns Suffix  . . . . . . . : clientele.com
+   Node Type . . . . . . . . . . . . : Hybrid
+   IP Routing Enabled. . . . . . . . : No
+   WINS Proxy Enabled. . . . . . . . : No
+   DNS Suffix Search List. . . . . . : clientele.com
+
+Wireless LAN adapter Wireless Network Connection 3:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : Microsoft Virtual WiFi Miniport Adapter #2
+   Physical Address. . . . . . . . . : 82-86-F2-A6-A1-B7
+   DHCP Enabled. . . . . . . . . . . : Yes
+   Autoconfiguration Enabled . . . . : Yes
+
+Wireless LAN adapter Wireless Network Connection 2:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : Microsoft Virtual WiFi Miniport Adapter
+   Physical Address. . . . . . . . . : 82-86-F2-A6-A1-B8
+   DHCP Enabled. . . . . . . . . . . : Yes
+   Autoconfiguration Enabled . . . . : Yes
+
+Wireless LAN adapter Wireless Network Connection:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : Intel(R) Dual Band Wireless-N 7260
+   Physical Address. . . . . . . . . : 80-86-F2-A6-A1-B7
+   DHCP Enabled. . . . . . . . . . . : Yes
+   Autoconfiguration Enabled . . . . : Yes
+
+Ethernet adapter Local Area Connection:
+
+   Connection-specific DNS Suffix  . : clientele.com
+   Description . . . . . . . . . . . : Intel(R) Ethernet Connection I217-LM
+   Physical Address. . . . . . . . . : 40-A8-F0-A7-64-DA
+   DHCP Enabled. . . . . . . . . . . : Yes
+   Autoconfiguration Enabled . . . . : Yes
+   Link-local IPv6 Address . . . . . : fe80::a9bc:cbc6:4f6:dc3%11(Preferred) 
+   IPv4 Address. . . . . . . . . . . : 10.1.0.34(Preferred) 
+   Subnet Mask . . . . . . . . . . . : 255.255.248.0
+   Lease Obtained. . . . . . . . . . : Wednesday, January 07, 2015 8:32:28 AM
+   Lease Expires . . . . . . . . . . : Wednesday, January 07, 2015 11:50:03 PM
+   Default Gateway . . . . . . . . . : 10.1.1.1
+   DHCP Server . . . . . . . . . . . : 10.1.1.36
+   DHCPv6 IAID . . . . . . . . . . . : 239118576
+   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-1B-8F-EB-DF-40-A8-F0-A7-64-DA
+   DNS Servers . . . . . . . . . . . : 8.8.8.8
+                                       8.8.4.4
+   NetBIOS over Tcpip. . . . . . . . : Enabled
+
+Ethernet adapter VirtualBox Host-Only Network:
+
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : VirtualBox Host-Only Ethernet Adapter
+   Physical Address. . . . . . . . . : 08-00-27-00-9C-71
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+   Link-local IPv6 Address . . . . . : fe80::c994:cc44:6fa8:4331%19(Preferred) 
+   IPv4 Address. . . . . . . . . . . : 192.168.56.1(Preferred) 
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 
+   DHCPv6 IAID . . . . . . . . . . . : 570949671
+   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-1B-8F-EB-DF-40-A8-F0-A7-64-DA
+   DNS Servers . . . . . . . . . . . : fec0:0:0:ffff::1%1
+                                       fec0:0:0:ffff::2%1
+                                       fec0:0:0:ffff::3%1
+   NetBIOS over Tcpip. . . . . . . . : Enabled
+
+Tunnel adapter isatap.{3D3208B4-0EA1-4233-839C-5EA18BCAFE29}:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : Microsoft ISATAP Adapter
+   Physical Address. . . . . . . . . : 00-00-00-00-00-00-00-E0
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+
+Tunnel adapter isatap.{801C50FA-EE47-47B2-B328-90208AC7CFC5}:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : Microsoft ISATAP Adapter #2
+   Physical Address. . . . . . . . . : 00-00-00-00-00-00-00-E0
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+
+Tunnel adapter isatap.{2478C9A1-2599-4E86-87EB-B228E15C02CB}:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : Microsoft ISATAP Adapter #3
+   Physical Address. . . . . . . . . : 00-00-00-00-00-00-00-E0
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+
+Tunnel adapter isatap.{CAE14B2C-07B9-4353-AE51-FAA6974AD2CE}:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+   Description . . . . . . . . . . . : Microsoft ISATAP Adapter #4
+   Physical Address. . . . . . . . . : 00-00-00-00-00-00-00-E0
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+
+Tunnel adapter isatap.clientele.com:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : clientele.com
+   Description . . . . . . . . . . . : Microsoft ISATAP Adapter #5
+   Physical Address. . . . . . . . . : 00-00-00-00-00-00-00-E0
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes

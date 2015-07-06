@@ -1,0 +1,180 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without
+' modification, are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its
+'   contributors may be used to endorse or promote products derived from this
+'   software without specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'----------------------------------------------------------------------------
+'
+' This script should be run on the Console server from a command prompt using
+' the CSCRIPT.EXE scripting engine.
+'
+' It allows you to display the contents of a file in a continuous mode similar
+' to the UNIX 'tail -f' command. It's much less efficient since Windows Script
+' file access is so limited - we pretty much just loop re-opening the file and
+' re-reading the whole thing since we can't really seek within the file. If we
+' detect the previous contents of the file have changed, re-start.
+'
+<job id="GSS File Monitor Utility">
+<script language="VBScript">
+
+  ' Initial Windows 2000 uses WScript 5.1, which is pretty awful. It's tempting
+  ' to nag people to upgrade, but for now we won't since I've been able to find
+  ' at least vaguely tractable workarounds for all its defects.
+  '
+  ' The free WSH 5.7 update can be gotten from
+  ' http://www.microsoft.com/downloads/results.aspx?freetext=Windows%20Script%205.7&DisplayLang=en
+
+  if LCase (Right (WScript.FullName, 11)) <> "cscript.exe" then
+    ' relaunch under cscript
+    set shell = WScript.CreateObject ("WScript.Shell")
+
+    text = ""
+    for each arg in WScript.Arguments
+      text = """" & arg & """ "
+    next
+    if text <> "" then
+      shell.run "cscript """ & WScript.ScriptFullName & """ " & text
+    end if
+    WScript.Quit
+  end if
+
+  if WScript.Version = "5.1" then
+    badScript = true
+  end if
+
+  if badScript then
+    set switches = namedArguments ()
+    unnamed = unnamedArguments ()
+    unnamedCount = UBound (unnamed) + 1
+  else
+    set switches = WScript.Arguments.Named
+    set unnamed = WScript.Arguments.Unnamed
+
+    unnamedCount = unnamed.Count
+  end if
+
+
+  set FS = WScript.CreateObject ("Scripting.FileSystemObject")
+  const ForReading = 1, ForWriting = 2, ForAppending = 8
+
+  if unnamedCount > 0 then
+    name = unnamed (0)
+  end if
+
+  if name = "" then
+    WScript.Echo "Please enter the name of a file to monitor"
+    WScript.Quit 1
+  end if
+
+  ' start monitoring the file
+
+  pos = 0
+  prev = ""
+
+  do
+    do
+      on error resume next
+      set file = FS.OpenTextFile (name, ForReading, False)
+      if Err = 0 then
+        exit do
+      end if
+      WScript.Sleep 1000
+    loop while true
+
+    on error goto 0
+
+    str = ""
+    if not file.AtEndOfStream then
+      str = file.ReadAll ()
+    end if
+
+    file.Close
+
+    if str <> prev then
+      if Left (str, pos) <> prev then
+        WScript.Echo "Restarting"
+	pos = 0
+      end if
+
+      WScript.StdOut.Write Mid (str, pos + 1)
+    end if
+
+    pos = Len (str)
+    prev = str
+
+    WScript.Sleep 1000
+  loop while true
+
+  WScript.quit 0
+
+' Since WScript 5.1 doesn't support the Named argument collection, split the regular
+' arguments collection into pieces
+
+function namedArguments ()
+  set named = CreateObject ("Scripting.Dictionary")
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) = "/" then
+      pos = InStr (arg, ":")
+      if pos > 0 then
+        named.Add Mid (arg, 2, pos - 2), Mid (arg, pos + 1)
+      else
+        named.Add Mid (arg, 2), ""
+      end if
+    end if
+  next
+
+  set namedArguments = named
+end function
+
+' Similar to the above, get the set of unnamed arguments for WScript 5.1
+
+function unnamedArguments ()
+  count = 0
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      count = count + 1
+    end if
+  next
+
+  ' Now we now the array size, set it up.
+
+  dim output ()
+  redim output (count)
+
+  count = 0
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      output (count) = arg
+      count = count + 1
+    end if
+  next
+
+  unnamedArguments = output
+end function
+
+</script>
+</job>

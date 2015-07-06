@@ -1,0 +1,1 @@
+for /f "tokens=*" %%i in (C:\folderlist.txt) do robocopy "\\%%i" "c:\%%i" /e /z /v >>c:\robocopy.log

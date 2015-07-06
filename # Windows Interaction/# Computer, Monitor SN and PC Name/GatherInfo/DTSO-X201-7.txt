@@ -1,0 +1,9 @@
+Installer: test 
+Room: blue 5 
+Domain (PC Name if None): DTSO-X201-7 
+Currently Logged-In User: Greg 
+Computer Name: DTSO-X201-7
+Computer Serial Number: R96NA9G
+Serial Number     : 
+Intel(R) Centrino(R) Ultimate-N 6300 AGN {192.168.1.118} 00:24:D7:4C:41:F8 
+DNS Servers {8.8.8.8;8.8.4.4} 

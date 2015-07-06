@@ -1,0 +1,2 @@
+no page
+show mac-address

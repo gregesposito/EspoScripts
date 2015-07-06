@@ -1,0 +1,59 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without
+' modification, are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its
+'   contributors may be used to endorse or promote products derived from this
+'   software without specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'----------------------------------------------------------------------------
+'
+' This script should be run on the Console server from a command prompt using
+' the CSCRIPT.EXE scripting engine.
+'
+' It allows you to set the account used by the Configuration Server to connect
+' to domain controllers to add machines to domain (the server only uses a
+' single pair of credentials for this rather than per-domain ones). Since the
+' console in versions 8.0 and above applies wildly incorrect sets of validity
+' criteria in its UI to set this information, this script just directly tells
+' the configuration server what to use.
+'
+<job id="GSS Set Console Service Account Utility">
+<script language="VBScript">
+  ' Access the Configuration Server service's root COM scripting object
+
+  set server = CreateObject("ConfigServer.Application")
+
+  set args = WScript.Arguments
+  if args.count <> 2 then
+    WScript.Echo "Usage: setaccount <account> <password>"
+    WScript.Quit 1
+  else
+    user = args.item(0)
+    pass = args.item(1)
+  end if
+
+  call server.SetConsoleServiceAccount(user, pass)
+  WScript.Echo "Domain account set to: " & user & " password " & pass
+
+</script>
+</job>

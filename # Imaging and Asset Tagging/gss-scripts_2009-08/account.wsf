@@ -1,0 +1,208 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without
+' modification, are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its
+'   contributors may be used to endorse or promote products derived from this
+'   software without specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'----------------------------------------------------------------------------
+'
+' This sample demonstrates creating a Configuration Server user account on
+' an Active Directory domain using the Active Directory Scripting Interface.
+
+' The purpose of this sample is to demonstrate the account permissions
+' required to be set on Active Directory systems to allow NT4-style domain
+' joining to take place (that is, joining a machine to the domain using a
+' precreated machine account and anonymous access, rather than requiring an
+' authenticated user to log in from the machine to be joined).
+
+' This sample is not entirely complete, because we would like to set policies
+' on the new user object (such as to deny interactive logons) for which there
+' are no scripting interfaces yet.
+
+' Finally, this sample shows binding to some Active Directory containers
+' using their names rather than by GUID, which means that this sample may
+' need customizing for non-English Active Directory installations.
+
+' This script should be run on the Console server from a command prompt using
+' the CSCRIPT.EXE scripting engine.
+
+<job id="GSS Create Console Service Account Utility">
+
+<script language="VBScript">
+
+Sub ReportError
+        WScript.Echo ("Error: " & Hex (Err))
+        WScript.Quit
+End Sub
+
+' Get the default naming context for the specified domain from the rootDSE
+' element.
+
+Function GetRoot (domain)
+        Set root = GetObject ("LDAP://" & domain & "/rootDSE")
+        GetRoot = root.Get ("defaultNamingContext")
+End Function
+
+' Open an authenticated connection to the root of an AD namespace with
+' alternate credentials
+
+Function GetDsRoot (domain, user, pass)
+        name = "LDAP://" & domain & "/" & GetRoot (domain)
+
+        If user = "" Then
+                Set auth = GetObject (name)
+        Else
+                Set root = GetObject ("LDAP:")
+                Set auth = root.OpenDsObject (name, user, pass, _
+                                              ADS_SECURE_AUTHENTICATION)
+        End If
+
+        Set GetDsRoot = auth
+End Function
+
+' Create a user object in the specified folder
+
+Const UF_NORMAL_ACCOUNT = &H200
+Const UF_DONT_EXPIRE_PASSWD = &H10000
+
+Function CreateUser (folder, name, password, description)
+        Set user = folder.Create ("user", "CN=" & name)
+
+        user.Put "sAMAccountName", name
+        user.Put "userAccountControl", UF_NORMAL_ACCOUNT Or UF_DONT_EXPIRE_PASSWD
+        user.Put "description", description
+
+        ' Write out the new user object into the account database
+        user.SetInfo
+
+        ' Setting the password can only be done once the account is created.
+        user.SetPassword password
+
+        ' Read all the properties of the newly-created user
+        user.GetInfo
+
+        set CreateUser = user
+End Function
+
+Sub AddAllowedRight (container, itemtype, item, trustee, right, inherit)
+        If item = "" Then
+                Set obj = container
+        Else
+                Set obj = container.GetObject (itemtype, item)
+        End If
+
+        ' With ASDI 2.5, need to load the property cache explicitly
+        Call obj.GetInfoEx (Array ("ntSecurityDescriptor"), 0)
+
+        Set desc = obj.Get ("nTSecurityDescriptor")
+        Set acl = desc.DiscretionaryAcl
+
+        ' Create the new ACE for adding into the DACL
+
+        Set ace = CreateObject ("AccessControlEntry")
+        ace.AccessMask = right
+        ace.AceType = ADS_ACETYPE_ACCESS_ALLOWED
+        ace.Trustee = trustee
+        If inherit Then
+                ace.AceFlags = ADS_ACEFLAG_INHERIT_ACE
+        Else
+                ace.AceFlags = 0
+        End If
+
+        ' Write the ACE into the ACL, the DACL into the SD, the SD into
+        ' the object property cache, and then write the object cache back
+
+        acl.AddAce ace
+        desc.DiscretionaryAcl = acl
+        obj.Put "nTSecurityDescriptor", desc
+        obj.SetInfo
+End Sub
+
+        ' Get the domain, account and password command-line parameters
+        Set args = WScript.Arguments.Named
+
+        admin = ""
+        adminPassword = ""
+        domain = ""
+        configAccount = "GHOST_USER"
+        configPassword = "GHOST_USER"
+
+        If args.Exists ("Domain") Then
+                domain = args ("Domain")
+        End If
+        If args.Exists ("AdminUser") Then
+                admin = args ("AdminUser")
+        End If
+        If args.Exists ("AdminPass") Then
+                adminPassword = args ("AdminPass")
+        End If
+        If args.Exists ("GhostUser") Then
+                configAccount = args ("GhostUser")
+        End If
+        If args.Exists ("GhostPass") Then
+                configPassword = args ("GhostPass")
+        End If
+
+        If domain = "" Then
+                WScript.Echo "Usage: cscript " & WScript.ScriptName & " /domain:<domain> /adminuser:<user> /adminpass:<password> /ghostuser:<user> /ghostpass:<password>"
+                WScript.Quit
+        End If
+
+        ' Bind to the AD tree in the destination domain
+
+        Set root = GetDsRoot (domain, admin, adminPassword)
+
+        ' Open the Users container for the new user object
+
+        Set users = root.GetObject ("container", "CN=Users")
+
+        ' Create the Ghost user account in the Users container
+
+        Set user = CreateUser (users, configAccount, configPassword, _
+                               "Ghost Domain Membership Management Account")
+
+        ' Give the Ghost user account the necessary permissions on the
+        ' Computers container to create and manipulate new computer accounts
+
+        AddAllowedRight root, "container", "CN=Computers", _
+                        domain & "\" & configAccount, _
+                        ADS_RIGHT_GENERIC_ALL, true
+
+        ' In case the target domain is Native Mode, ensure that there is
+        ' sufficient permissions for the ANONYMOUS account to allow the
+        ' machines to connect to a pre-created machine account
+
+        AddAllowedRight root, "container", "CN=System", "S-1-5-7", _
+                        ADS_RIGHT_GENERIC_READ, true
+
+        AddAllowedRight root, "builtinDomain", "CN=Builtin", "S-1-5-7", _
+                        ADS_RIGHT_GENERIC_READ, false
+
+        AddAllowedRight root, "", "", "S-1-5-7", _
+                        ADS_RIGHT_ACTRL_DS_LIST, false
+
+        WScript.Echo "User account created"
+</script>
+
+</job>

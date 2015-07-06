@@ -1,0 +1,1 @@
+netsh interface ipv4 set "Local Area Connection" ms_tcpip6

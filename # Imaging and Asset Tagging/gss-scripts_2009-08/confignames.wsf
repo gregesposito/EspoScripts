@@ -1,0 +1,249 @@
+' Copyright (c) 2008, Symantec Corporation
+' All rights reserved.
+' 
+' Redistribution and use in source and binary forms, with or without modification,
+' are permitted provided that the following conditions are met:
+'
+' * Redistributions of source code must retain the above copyright notice,
+'   this list of conditions and the following disclaimer.
+' * Redistributions in binary form must reproduce the above copyright notice,
+'   this list of conditions and the following disclaimer in the documentation
+'   and/or other materials provided with the distribution.
+' * Neither the name of the Symantec Corporation nor the names of its contributors
+'   may be used to endorse or promote products derived from this software without
+'   specific prior written permission.
+'
+' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+' ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+' WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+' IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+' INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+' NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+' PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+' WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+' POSSIBILITY OF SUCH DAMAGE.
+'
+'-----------------------------------------------------------------------------------
+'
+' This script attempts to resolve a problem due to a small fault in the way
+' the console handles the uniqueness of configuration setting names, since it
+' requires names for machine default configurations even though there is no
+' reason for these to even be named at all.
+'
+' This script renames the machine default configurations to avoid this.
+'
+
+<job id="GSS Machine Configuration Rename Utility">
+<script language="VBScript">
+  ' Some basic setup - this script requires a 32-bit execution environment
+
+  q = Chr (34)
+  set Shell = WScript.CreateObject ("WScript.Shell")
+  set Env = Shell.Environment ("Process")
+  arch = Env ("PROCESSOR_ARCHITECTURE")
+
+  if arch <> "x86" then
+    host = Replace (WScript.FullName, "System32", "SysWow64", 1, -1, 1)
+    if host = WScript.FullName then
+      WScript.Quit 1
+    end if
+
+    args = q & WScript.ScriptFullName & q
+    for each arg in WScript.Arguments
+      args = args & " " & q & arg & q
+    next
+
+    Shell.Run host & " " & args, 0, true
+    WScript.Quit 1
+  end if
+
+  if WScript.Version = "5.1" then
+    badScript = true
+  end if
+
+  if badScript then
+    set switches = namedArguments ()
+    unnamed = unnamedArguments ()
+    unnamedCount = UBound (unnamed) + 1
+  else
+    set switches = WScript.Arguments.Named
+    set unnamed = WScript.Arguments.Unnamed
+
+    unnamedCount = unnamed.Count
+  end if
+
+  ' Have a "test" mode for forcing the configuration names to a fixed
+  ' value - for testing the code changes in post-GSS2.5 designed to
+  ' avoid the root problem this script addresses.
+
+  test = switches.Exists ("test")
+
+  ' Access the Configuration Server service's root COM scripting object
+
+  set server = CreateObject ("ConfigServer.Application")
+
+  ' Get the database configuration object from the configuration server
+
+  dim dbInfo
+  on error resume next
+  set dbInfo = server.ConfigDatabase
+  on error goto 0
+
+  ' Obtain the current database username and password
+
+  if not IsEmpty (dbInfo) then
+    user = dbInfo.Username
+    pass = dbinfo.Password
+  else
+    user = "dba"
+    pass = "sql"
+  end if
+
+  ' Form the ODBC connection string to the database - this is a 32-bit connection
+  ' string, not usable on 64-bit systems (which also don't have the requisite ADODB
+  ' providers for doing anything useful, either).
+
+  conn = "DSN=Symantec Ghost;UID=" & user & ";PWD=" & pass
+
+  ' Begin by getting a connection to the database
+
+  set adoConn = CreateObject ("ADODB.Connection")
+  adoConn.Open (conn)
+  adoConn.BeginTrans
+
+  if test then
+    execSql ("update ResourceView set Description = 'test' " & _
+             "where ParentId = 2 AND MachineId IS NOT NULL")
+    adoConn.CommitTrans
+    WScript.Quit 0
+  end if
+
+  ' Get the machine names for machines with default configurations
+
+  dim id_name
+  set id_name = CreateObject ("Scripting.Dictionary")
+
+  dim name_id
+  set name_id = CreateObject ("Scripting.Dictionary")
+
+  dim record
+  set record = query ("select ID, Description " & _
+                      "from ResourceView " & _
+                      "where ParentID = 2 AND MachineId IS NOT NULL")
+
+  dim collision
+  collision = false
+
+  dim name
+  dim id
+
+  do while not record.EOF
+    id = record ("ID")
+    name = record ("Description")
+
+    if name_id.Exists (name) then
+      ' There's a collision, make up a name
+      name = name & " - " & id
+      collision = true
+
+      ' the id_name map is what we process when changing things,
+      ' so only add things to it if they need to be altered.
+
+      id_name.Add id, name
+    end if
+
+    name_id.Add name, id
+    record.MoveNext
+  loop
+
+  if not collision then
+    WScript.Echo "No configuration name collisions"
+    WScript.Quit 0
+  end if
+
+  dim x
+  x = 0
+
+  for each id in id_name.keys
+    x = x + execSql ("update ResourceView " & _
+                     "set Description = '" & id_name (id) & "' " & _
+                     "where ID = " & id)
+  next
+
+  adoConn.commitTrans
+  server.RefreshDatabase
+
+  WScript.Echo id_name.count & " configuration names updated"
+
+  ' it handles by re-reading everything.
+
+  WScript.Quit 0
+
+' Since WScript 5.1 doesn't support the Named argument collection, split the regular
+' arguments collection into pieces
+
+function namedArguments ()
+  set named = CreateObject ("Scripting.Dictionary")
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) = "/" then
+      pos = InStr (arg, ":")
+      if pos > 0 then
+        named.Add Mid (arg, 2, pos - 2), Mid (arg, pos + 1)
+      else
+        named.Add Mid (arg, 2), ""
+      end if
+    end if
+  next
+
+  set namedArguments = named
+end function
+
+' Similar to the above, get the set of unnamed arguments for WScript 5.1
+
+function unnamedArguments ()
+  count = 0
+
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      count = count + 1
+    end if
+  next
+
+  ' Now we now the array size, set it up.
+
+  dim output ()
+  redim output (count)
+
+  count = 0
+  for each arg in WScript.Arguments
+    if Mid (arg, 1, 1) <> "/" then
+      output (count) = arg
+      count = count + 1
+    end if
+  next
+
+  unnamedArguments = output
+end function
+
+' Create a query object
+
+function query (sql)
+  set adoRecord = CreateObject ("ADODB.RecordSet")
+  adoRecord.ActiveConnection = adoConn
+
+  adoRecord.Open (sql)
+  set query = adoRecord
+end function
+
+' Perform a one-shot execution
+
+function execSql (sql)
+  rows = 0
+  adoConn.Execute sql, rows
+  execSql = rows
+end function
+
+</script>
+</job>

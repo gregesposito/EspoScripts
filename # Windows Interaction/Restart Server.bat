@@ -1,0 +1,1 @@
+SHUTDOWN /r /f /t 0 /m \\10.1.1.68 /c "SKUMM"

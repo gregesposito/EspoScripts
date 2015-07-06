@@ -1,0 +1,11 @@
+Batch script asks for Installer Name and Room Number
+
+Then it pulls:
+
+Domain
+Currently Logged In User
+Currently plugged in Monitor
+Network Device Type(s)
+Network IP(s)
+Network MAC(s)
+Network DNS Server(s)

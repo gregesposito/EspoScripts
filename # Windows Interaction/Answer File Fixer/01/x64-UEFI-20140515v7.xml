@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend">
+    <settings pass="windowsPE">
+        <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <WindowsDeploymentServices>
+                <Login>
+                    <Credentials>
+                        <Domain>ImageServer01</Domain>
+                        <Password>Un@ttend1</Password>
+                        <Username>unattend</Username>
+                    </Credentials>
+                </Login>
+                <ImageSelection>
+                    <InstallTo>
+                        <DiskID>0</DiskID>
+                        <PartitionID>3</PartitionID>
+                    </InstallTo>
+                </ImageSelection>
+            </WindowsDeploymentServices>
+            <DiskConfiguration>
+                <Disk wcm:action="add">
+                    <CreatePartitions>
+                        <CreatePartition wcm:action="add">
+                            <Order>1</Order>
+                            <Size>100</Size>
+                            <Type>EFI</Type>
+                        </CreatePartition>
+                        <CreatePartition wcm:action="add">
+                            <Order>2</Order>
+                            <Size>128</Size>
+                            <Type>MSR</Type>
+                        </CreatePartition>
+                        <CreatePartition wcm:action="add">
+                            <Order>3</Order>
+                            <Extend>true</Extend>
+                            <Type>Primary</Type>
+                        </CreatePartition>
+                    </CreatePartitions>
+                    <ModifyPartitions>
+                        <ModifyPartition wcm:action="add">
+                            <Format>FAT32</Format>
+                            <Label>System</Label>
+                            <Order>1</Order>
+                            <PartitionID>1</PartitionID>
+                        </ModifyPartition>
+                        <ModifyPartition wcm:action="add">
+                            <Order>2</Order>
+                            <PartitionID>2</PartitionID>
+                        </ModifyPartition>
+                        <ModifyPartition wcm:action="add">
+                            <Format>NTFS</Format>
+                            <Label>Windows</Label>
+                            <Letter>C</Letter>
+                            <Order>3</Order>
+                            <PartitionID>3</PartitionID>
+                        </ModifyPartition>
+                    </ModifyPartitions>
+                    <DiskID>0</DiskID>
+                    <WillWipeDisk>true</WillWipeDisk>
+                </Disk>
+                <WillShowUI>OnError</WillShowUI>
+            </DiskConfiguration>
+        </component>
+    </settings>
+    <settings pass="specialize">
+        <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <RunSynchronous>
+                <RunSynchronousCommand wcm:action="add">
+                    <Description>Create Account</Description>
+                    <Order>1</Order>
+                    <Path>net user /add dalyinstaller BCP$2014!*</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Description>Set Admin</Description>
+                    <Order>2</Order>
+                    <Path>net localgroup administrators dalyinstaller /add</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Description>Update Junos</Description>
+                    <Order>3</Order>
+                    <Path>msiexec /i &quot;C:\Daly\001 - Batch Installs\JunosPulse.x64.msi&quot; /qn /norestart</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Description>Install Lightspeed</Description>
+                    <Order>4</Order>
+                    <Path>msiexec /i &quot;C:\Daly\001 - Batch Installs\LightspeedUserAgentx64.msi&quot; /qn ID_SERVER=10.3.8.80</Path>
+                </RunSynchronousCommand>
+            </RunSynchronous>
+        </component>
+        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <ComputerName>*</ComputerName>
+        </component>
+    </settings>
+    <settings pass="oobeSystem">
+        <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <InputLocale>en-US</InputLocale>
+            <SystemLocale>en-US</SystemLocale>
+            <UILanguage>en-US</UILanguage>
+            <UserLocale>en-US</UserLocale>
+        </component>
+        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <OOBE>
+                <HideEULAPage>true</HideEULAPage>
+                <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+                <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+                <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
+                <ProtectYourPC>3</ProtectYourPC>
+                <NetworkLocation>Other</NetworkLocation>
+                <HideLocalAccountScreen>true</HideLocalAccountScreen>
+            </OOBE>
+            <AutoLogon>
+                <Password>
+                    <Value>QABEAG0AMQBuADEANQB0AHIAQAB0ADAAcgBQAGEAcwBzAHcAbwByAGQA</Value>
+                    <PlainText>false</PlainText>
+                </Password>
+                <Enabled>true</Enabled>
+                <LogonCount>3</LogonCount>
+                <Username>Administrator</Username>
+                <Domain>.</Domain>
+            </AutoLogon>
+            <UserAccounts>
+                <AdministratorPassword>
+                    <Value>QABEAG0AMQBuADEANQB0AHIAQAB0ADAAcgBBAGQAbQBpAG4AaQBzAHQAcgBhAHQAbwByAFAAYQBzAHMAdwBvAHIAZAA=</Value>
+                    <PlainText>false</PlainText>
+                </AdministratorPassword>
+                <LocalAccounts>
+                    <LocalAccount wcm:action="add">
+                        <Password>
+                            <Value>QABEAG0AMQBuADEANQB0AHIAQAB0ADAAcgBQAGEAcwBzAHcAbwByAGQA</Value>
+                            <PlainText>false</PlainText>
+                        </Password>
+                        <Name>Administrator</Name>
+                        <Group>Administrators</Group>
+                        <DisplayName>Administrator</DisplayName>
+                        <Description></Description>
+                    </LocalAccount>
+                    <LocalAccount wcm:action="add">
+                        <Password>
+                            <Value>MQBFAGEAcwB5AFAAYQBzAHMAdwBvAHIAZAA/AFAAYQBzAHMAdwBvAHIAZAA=</Value>
+                            <PlainText>false</PlainText>
+                        </Password>
+                        <Description>Admin</Description>
+                        <DisplayName>Admin</DisplayName>
+                        <Group>Administrators</Group>
+                        <Name>Admin</Name>
+                    </LocalAccount>
+                </LocalAccounts>
+            </UserAccounts>
+            <TimeZone>Eastern Standard Time</TimeZone>
+        </component>
+    </settings>
+    <cpi:offlineImage cpi:source="wim:e:/windows%208.1%20enterprise/64/ir1_cena_x64frev_en-us_dv5/sources/install.wim#Windows 8.1 Enterprise" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
+</unattend>

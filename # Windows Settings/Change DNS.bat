@@ -1,0 +1,1 @@
+netsh interface ip set dns "Movement" static 8.8.8.8, 8.8.4.4

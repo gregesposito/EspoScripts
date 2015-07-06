@@ -1,0 +1,281 @@
+                                                                   Revision : 01
+--------------------------------------------------------------------------------
+Software name      Windows Utility To Read and Write Asset ID Information
+
+Support models     ThinkPad L410, L412, L420, L421, L430
+                   ThinkPad L510, L512, L520, L530
+                   ThinkPad R400
+                   Thinkpad R500
+                   ThinkPad SL410
+                   ThinkPad SL510
+                   ThinkPad T400, T400s, T410, T410i, T410s, T410si, T420, T420i,
+                            T420s, T420si, T430, T430i, T430s, T430si
+                   ThinkPad T500, T510, T510i, T520, T520i, T530, T530i
+                   ThinkPad W500, W510, W520, W530
+                   ThinkPad W700, W700ds, W701, W701ds
+                   ThinkPad X1, X1 Carbon
+                   ThinkPad X100e, X120e, X121e, X130e
+                   ThinkPad X200, X200s, X200si, X200 Tablet, X201, X201i, X201s,
+                            X201 Tablet, X220, X220i, X220 Tablet, X220i Tablet,
+                            X230, X230i, X230 Tablet, X230i Tablet
+                   ThinkPad X300, X301
+
+                   ThinkPad Edge 11", 13", 14", 15"
+                   ThinkPad Edge E10
+                   ThinkPad Edge E30, E31
+                   ThinkPad Edge E40
+                   ThinkPad Edge E50
+                   ThinkPad Edge E120, E125
+                   ThinkPad Edge E220s
+                   ThinkPad Edge E320, E325
+                   ThinkPad Edge E420, E420s, E425
+                   ThinkPad Edge E520, E525
+                   ThinkPad Edge S430
+
+                   ThinkPad T40, T40p, T41, T41p, T42, T42p, T43, T43p
+                   ThinkPad T60, T60p, T61, T61p
+                   ThinkPad G40, G41
+                   ThinkPad R40, R40e
+                   ThinkPad R50, R50e, R50p, R51, R51e, R51p, R52
+                   ThinkPad R60, R60e, R61, R61e
+                   ThinkPad X30, X31, X32
+                   ThinkPad X40, X41, X41 Tablet
+                   ThinkPad X60, X60s, X60 Tablet, X61, X61s, X61 Tablet
+                   ThinkPad Z60m, Z60t, Z61e, Z61m, Z61p, Z61t
+                   ThinkPad Reserve Edition
+
+Operating Systems  Microsoft Windows 7  32-bit, 64-bit
+                   Microsoft Windows Vista  32-bit, 64-bit
+                   Microsoft Windows XP  Home Edition, Professional
+
+                   Refer to marketing materials to find out what computer models
+                   support which Operating Systems.
+
+Version            1.02
+
+
+--------------------------------------------------------------------------------
+WHAT THIS PACKAGE DOES
+
+  The utilities running on Windows to read out and store an asset ID data from
+  ThinkPad is to provide query and set feature of an asset ID and other
+  information.
+
+  To use this utility, you need logon to the Windows with administrative
+  privileges.
+
+  If this package has been installed, updating (overwrite-installing) this
+  package will fix problems, add new functions, or expand functions as noted
+  below.
+
+  This program is language independent and can be used with any language system.
+
+
+--------------------------------------------------------------------------------
+CHANGES IN THIS RELEASE
+  Version 1.02
+
+[Important updates]
+  Nothing.
+
+[New functions or enhancements]
+- Added support for ThinkPad L430,L530,T430,T430i,T430s,T430si,T530,T530i,W530,
+  X1,X1 Carbon,X120e,X121e,X130e,X230,X230i,X230 Tablet,X230i Tablet.
+- Added support for ThinkPad Edge 11",14",15",E10,E31,E40,E50,E120,E125,E320,
+  E325,E420,E425,E520,E525,S430.
+
+[Problem fixes]
+  Nothing.
+
+
+--------------------------------------------------------------------------------
+DETERMINING WHICH VERSION IS INSTALLED
+
+  Version or Details tab from My Computer/Properties.
+  1. Locate WinAIAPackage.exe from My Computer.
+  2. Right click the file and select Properties.
+  3. Depends on Windows OS, a tab "Versions" or "Details" will have file version
+     information.
+
+
+--------------------------------------------------------------------------------
+PROGRAM EXECUTION NOTES
+
+  WinAIAPackage is executed as:
+        WinAIAPackage.exe [options] <command>
+
+  Where valid options are:
+        --silent
+        --output-file <filename>
+
+  And where <command> is one of the following:
+        --get [group[ group[ ...]]]
+        --set-from-file <filename>
+        --set group.field=value [group.field=value [...]]
+        --initialize
+        --help
+
+
+  Note: The filenames should be provided with a full path to the file. This is
+        because the program actually runs from out of the %TMP% folder, and so
+        the relative path is also from the %TMP% folder.
+
+  Note: The filename for input data has each entry on a separate line, in the
+        same group.field=value format.
+
+  Note: When the silent option is provided, there is no opportunity to abort
+        an update in the set modes. Without this option, there is a confirmation
+        dialog.
+
+
+  Examples shown below should be entered on one line. They are broken up to fit
+  the 80 character width of a readme text file.
+
+  To get everything from the user information area (UIA):
+        WinAIAPackage.exe --get
+
+  To get only the OWNERDATA group, silently, while saving the output to a file:
+        WinAIAPackage.exe --silent --output-file "\path\to\file\aia_output.txt"
+        --get OWNERDATA
+
+  To set the ASSET_NUMBER:
+        WinAIAPackage.exe --set "USERASSETDATA.ASSET_NUMBER=ABC 123"
+
+  To set one of the user-specifiable values:
+        WinAIAPackage.exe --set "USERDEVICE.My Field=My Value"
+
+
+--------------------------------------------------------------------------------
+DEVICE GROUPS AND FIELDS
+
+  All options, group names and field names are case-insensitive, except for the
+  USERDEVICE group and the prefix value.
+
+  If no options are specified or an incorrect option is specified, then the
+  help text for the utility is displayed.
+
+  Here is a list of the valid group names and their associated fields:
+
+  USERDEVICE         <Field1>  -  These fields are defined by the user.
+                     :            The maximum number of user fields is five.
+                     <Fieldn>
+
+  PRELOADPROFILE     IMAGEDATE
+                     IMAGE
+
+  USERASSETDATA      PURCHASE_DATE
+                     LAST_INVENTORIED
+                     WARRANTY_END
+                     WARRANTY_DURATION
+                     AMOUNT
+                     ASSET_NUMBER
+
+  LEASEDATA          LEASE_START_DATE
+                     LESE_END_DATE
+                     LEASE_TERM
+                     LEASE_AMOUNT
+                     LESSOR
+
+  OWNERDATA          OWNERNAME
+                     DEPARTMENT
+                     LOCATION
+                     PHONE_NUMBER
+                     OWNERPOSITION
+
+  Note: The NETWORKCONNECTION group, supported by the DOS utilities, is NOT
+        supported by WinAIAPackage.
+
+  Note: The USERASSETDATA.ASSET_NUMBER is available through WMI by querying the
+        SMBIOSAssetTag field of the Win32_SystemEnclosure class.
+
+
+--------------------------------------------------------------------------------
+PROGRAM RETURN CODES (EXIT CODES)
+
+  When WinAIAPackage closes, one of the following return codes is provided:
+
+  Decimal
+  Code        Description                                                 Note
+  ---------   ----------------------------------------------------------- ----
+  0           Successful completion
+  1           User Information Area (UIA) not found.
+  2           Could not read from EEPROM.
+  3           Could not write to EEPROM.
+  4           UIA has an invalid header (other).
+  5           UIA has an invalid header (signature error).
+  6           UIA is corrupt.
+  7           Internal error (e.g., NULL pointer).
+  8           Command-line arguments are invalid.
+  9           Reserved.
+  10          Internal error (e.g., buffer too small).
+  11          The UIA is too small to hold the requested contents.
+  12          Could not load the dependency library (i2cw).
+  13          The user aborted writing the new contents.
+  14          Internal error (e.g., string from Unicode to ANSI).
+  245         Failed to install one (tvti2c) of the dependency drivers.   *
+  248         Failed to install one (psadd) of the dependency drivers.    *
+
+  Note: The installation of the dependency drivers requires that WinAIAPackage
+        be run with administrator privileges. Once the drivers are installed, or
+        if they were already installed, the program can be run with normal user
+        privileges.
+
+
+--------------------------------------------------------------------------------
+VERSION INFORMATION
+
+  The following versions have been released to date.
+
+  Package    Rev.  Issue Date
+  -------    ----  ----------
+  1.02       01    2012/07/11
+  1.01       01    2011/04/22
+  1.00       01    2010/04/02
+
+  Note: Revision number (Rev.) is for administrative purpose of this README
+        document and is not related to software version. There is no need to
+        upgrade this software when the revision number changes.
+
+  To check the version of software, refer to the Determining which version is
+  installed section.
+
+
+Summary of Changes
+
+  Where: <   >        Package version number
+         [Important]  Important update
+         (New)        New function or enhancement
+         (Fix)        Correction to existing function
+
+<1.02>
+- (New) Added support for ThinkPad L430,L530,T430,T430i,T430s,T430si,T530,T530i,
+        W530,X1,X1 Carbon,X120e,X121e,X130e,X230,X230i,X230 Tablet,X230i Tablet.
+- (New) Added support for ThinkPad Edge 11",14",15",E10,E31,E40,E50,E120,E125,
+        E320,E325,E420,E425,E520,E525,S430.
+
+<1.01>
+- (New) Added support for ThinkPad L412,L420,L421,L512,L520,T420,T420i,T420s,
+        T420si,T510,T520,T520i,W520,X220,X220i,X220 Tablet,X220i Tablet.
+- (New) Added support for ThinkPad Edge E220s,E420,E420s,E520.
+- (Fix) The version number changed to package version.
+
+<1.00>
+- (New) Initial release.
+
+
+--------------------------------------------------------------------------------
+LIMITATIONS
+
+  Nothing.
+
+
+--------------------------------------------------------------------------------
+TRADEMARKS
+
+* Lenovo and ThinkPad are registered trademarks of Lenovo.
+
+* Microsoft, Windows and Windows Vista are registered trademarks of Microsoft
+  Corporation.
+
+Other company, product, and service names may be registered trademarks,
+trademarks or service marks of others.

@@ -1,0 +1,896 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>IpTools.com - Free DNS tools
+</title>
+<meta content="Find Ip Tools, DNS tools, internet tools, WHOIS, traceroute, ping, domain name tools and more. " name="Description" />
+<meta name="Keywords" content="DNS, DNS hosting, WHOIS, domain, domain name, tracert, traceroute, ping, latency, ccTLD, TLD, gTLD, ARIN, APNIC, RIPE, Internic, domains, IP, lookup, DNS lookup, reverse DNS, IPWHOIS, IP WHOIS, NetGeo, DNS test, DNS tests, DNS tools, DNS services, URL deobfuscator, spam, spam database lookup, CIDR, Netmask, IPv6, HTML validator, HTML validation, Punycode, IDNA, IDN, ACE prefix, network,networking" />
+
+
+<meta property="fb:admins" content="1036898936,566083744,679985271,736971293,1062676890" />
+<meta property="og:site_name" content="Iptools"/>
+<meta property="og:url" content="http://www.iptools.com/"/>
+<meta property="og:title" content="Iptools.com"/>
+<meta property="og:image" content="http://www.iptools.com/images/logo-fb.jpg"/>
+<meta property="og:type" content="website" />
+<meta property="og:description" content="Find Ip Tools, DNS tools, internet tools, WHOIS, traceroute, ping, domain name tools and more." />
+
+
+<script type="text/javascript" language="javascript" src="http://www.iptools.com/js/cookies.js"></script>
+<script type="text/javascript" language="javascript" src="http://www.iptools.com/greybox/AmiJS.js"></script>
+<script type="text/javascript" language="javascript" src="http://www.iptools.com/greybox/greybox.js"></script>
+<link href="http://www.iptools.com/css/themes/compact.css" rel="stylesheet" type="text/css" title="default" />
+<link href="http://www.iptools.com/css/general.css" rel="stylesheet" type="text/css"/>
+
+<script type="text/javascript" language="javascript">
+<!-- This script and many more are available free online at -->
+<!-- The JavaScript Source!! http://javascript.internet.com -->
+<!-- Created by: elouai.com -->
+<!-- Revised by: Silly_TomcaT -->
+<!-- Begin
+var ie=document.all;
+var nn6=document.getElementById&&!document.all;
+var isdrag=false;
+var x,y;
+var dobj;
+
+function movemouse(e)
+{
+  if (isdrag)
+  {
+    dobj.style.left = nn6 ? tx + e.clientX - x : tx + event.clientX - x;
+    dobj.style.top  = nn6 ? ty + e.clientY - y : ty + event.clientY - y;
+    return false;
+  }
+}
+function selectmouse(e)
+{
+  var fobj       = nn6 ? e.target : event.srcElement;
+  var topelement = nn6 ? "HTML" : "BODY";
+  while (fobj.tagName != topelement && fobj.className != "dragme")
+  {
+    fobj = nn6 ? fobj.parentNode : fobj.parentElement;
+  }
+  if (fobj.className=="dragme")
+  {
+    isdrag = true;
+    dobj = fobj;
+    tx = parseInt(dobj.style.left+0,10);
+    ty = parseInt(dobj.style.top+0,10);
+    x = nn6 ? e.clientX : event.clientX;
+    y = nn6 ? e.clientY : event.clientY;
+    document.onmousemove=movemouse;
+    return false;
+  }
+}
+document.onmousedown=selectmouse;
+document.onmouseup=new Function("isdrag=false");
+//  End -->
+
+</script>
+
+<!-- CODE ONE -->
+    <link href="http://www.iptools.com/greybox/greybox.css" rel="stylesheet" type="text/css" media="all" />
+    <script language="javascript" type="text/javascript">
+    //GreyBox configuration
+      //Use animation?
+      var GB_ANIMATION = true;
+      var GB_IMG_DIR = "greybox/";
+
+      //Clicking on the transparent overlay closes the GreyBox window?
+      var GB_overlay_click_close = false;
+    </script>
+
+<!-- CODE ONE -->
+<script type="text/javascript">
+window.google_analytics_uacct = "UA-676735-27";
+</script>
+
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-676735-27']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+<!-- Google Analytics Social Button Tracking -->
+<script type="text/javascript" src="https://s3.amazonaws.com/ha_js/ga_social_tracking.js"></script>
+
+</head>
+<body onload="setDropDown(getCookie('style'));" onunload="hideb();">
+
+
+
+
+
+<div class="wrap">
+
+
+<div class="header">
+
+<!-- #BeginLibraryItem "/Library/iptools_header.lbi" -->
+<div class="part-a">
+<div class="logo">
+<a href="http://www.iptools.com/"><img src="./images/iptools_logo.png" alt="Ip Tools, DNS Tools" name="iptoolslogo" width="199" height="62" border="0" id="iptoolslogo" /></a></div>
+
+
+<div class="buscador">
+<form action="http://www.iptools.com/buscadorg.php" id="cse-search-box">
+  <div>
+    <input type="hidden" name="cx" value="partner-pub-7405756775336113:ix93kxl5iwu" />
+    <input type="hidden" name="cof" value="FORID:10" />
+    <input type="hidden" name="ie" value="ISO-8859-1" />
+    <input type="text" name="q" size="30"  />
+    <input type="submit" name="sa" value="Search" class="btn-send"/>
+  </div>
+</form>
+<script type="text/javascript" src="http://www.google.com/cse/brand?form=cse-search-box&amp;lang=en"></script>
+</div> 
+
+</div>
+<div class="part-b">
+
+<div class="add728">
+
+ <!-- e-planning v3 - Comienzo espacio MARCHEX _ Iptools _ RON _ 728X90 -->
+<script type="text/javascript" language="JavaScript1.1">
+<!--
+var rnd = (new String(Math.random())).substring(2,8) + (((new Date()).getTime()) & 262143);
+var cs = document.charset || document.characterSet;
+document.write('<scri' + 'pt language="JavaScript1.1" type="text/javascript" src="http://ads.us.e-planning.net/eb/3/630b/104b1b0ed0fd1d35?o=j&rnd=' + rnd + '&crs=' + cs + '"></scr' + 'ipt>');
+//-->
+</script>
+<noscript><a href="http://ads.us.e-planning.net/ei/3/630b/104b1b0ed0fd1d35?it=i&rnd=$RANDOM" target="_blank"><img alt="e-planning.net ad" src="http://ads.us.e-planning.net/eb/3/630b/104b1b0ed0fd1d35?o=i&rnd=$RANDOM" border=0></a></noscript>
+<!-- e-planning v3 - Fin espacio MARCHEX _ Iptools _ RON _ 728X90 -->
+</div>
+
+</div>
+
+
+
+</div>
+
+
+<div class="content-modulos">
+<div class="modulo-a">
+
+
+
+<div class="title-des">
+<h1>IpTools.com - Free DNS tools
+</h1></div>
+
+
+
+
+
+
+
+
+<div class="little-mods">
+
+
+<div class="content-tools">
+<div class="mas1">
+<!-- Añade esta etiqueta en la cabecera o delante de la etiqueta body. -->
+<script type="text/javascript" src="http://apis.google.com/js/plusone.js"></script>
+
+<!-- Añade esta etiqueta donde quieras colocar el botón +1 -->
+<g:plusone size="small"></g:plusone>
+</div>
+
+<div id="fb-root"><script src="http://connect.facebook.net/en_US/all.js#appId=111839772239599&amp;xfbml=1"></script>
+<script type="text/javascript">_ga.trackFacebook();</script>
+<fb:like href="www.iptools.com" send="true" width="450" show_faces="false" action="recommend" font="trebuchet ms" layout="button_count"></fb:like></div>
+</div>
+
+
+
+<div class="description"><span>Find Ip Tools, DNS tools, internet tools, WHOIS, traceroute, ping, domain name tools and more. </span>
+
+
+
+</div> 	
+
+
+<div class="mod-1"><!-- #BeginLibraryItem "/Library/ping.lbi" --><!-- tool table-->
+<div id="ping_tool">
+<form name="ping" action="/dnstools.php" method="get">
+
+<h2><span class="hd">Ping</span></h2>
+            
+ <div class="mid">Enter an IP or host address </div> 
+            
+                  <div class="field">
+                  <input type="hidden" name="tool" value="ping" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input type="submit" value="Go" class="btn-send" />  </div>
+ 
+ </form>       
+</div>
+
+<!-- tool table--><!-- #EndLibraryItem --></div>
+                      
+  <!--mod-1-->                         
+<div class="mod-1"><!-- #BeginLibraryItem "/Library/domain_info.lbi" --><!-- tool table-->
+<form name="domain_info" action="/dnstools.php" method="get" style="margin-bottom:0;">
+<div id="domain_info_tool">
+	<h2><span class="hd">Domain Info</span></h2>
+            
+
+       <div class="tooltitle"><span class="mid">Shows Information about a domain</span> </div>
+          
+                  <div class="field"><input type="hidden" name="tool" value="domain_info" />
+                            <input type="text" name="user_data" value="" class="text-label"  />
+                            <input type="submit" value="Go"  class="btn-send"/>                  </div>
+           
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+                      
+  <!--mod-1-->           
+                    
+                      <div class="mod-1"><!-- #BeginLibraryItem "/Library/ip2country.lbi" --><!-- tool table-->
+<form name="ip_to_country" action="/dnstools.php" method="get">
+<div id="ip2country_tool" >
+	<h2><span class="hd">IP to Country </span></h2>
+        
+                  <div align="left" class="tooltitle"><span class="mid">Shows country of origin</span> </div>
+             
+                  <div class="field"><input type="hidden" name="tool" value="ip_to_country" />
+                            <input type="text" name="user_data" value="" class="text-label"  />
+                            <input name="submit" type="submit" value="Go"  class="btn-send" />                  </div>
+            
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+
+
+  <!--mod-1-->        
+                      <div class="mod-1"><!-- #BeginLibraryItem "/Library/cidr.lbi" --><!-- tool table-->
+<form name="cidr" action="/dnstools.php" method="get">
+<div id="cidr_tool">
+	<h2><span class="hd">CIDR</span></h2>
+            
+                  <div class="tooltitle"><span class="mid">Calculate CIDR ranges </span> </div>
+            
+                  <div class="field"><input type="hidden" name="tool" value="cidr" />
+                            <input type="text" name="user_data" value="" class="text-label"  />
+                            <input type="submit" value="Go"  class="btn-send" />
+                  </div>
+            
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+
+                   
+  <!--mod-1-->                              
+<div class="mod-1">
+					 
+<form action="/dnstools.php" method="get" name="tool" id="trace_route" >
+	<div id="free_email_tool-2">
+	<h2><span class="hd">Traceroute </span></h2>
+            <div class="tooltitle"><span class="mid">Traces route packets to this host</span> </div>
+            
+                  <div class="field"><input type="hidden" name="tool" value="traceroute" />
+                            <input type="text" name="user_data" value="" class="text-label"  />
+                            <input name="submit" type="submit" value="Go"  class="btn-send"  onclick="javascript: show()"/>                  
+					</div>
+             
+</div>
+</form>					  
+				
+					  </div>
+                      
+                      
+  <!--mod-1-->                             
+
+
+                      
+ 
+                      <div class="mod-1">
+					  <!-- #BeginLibraryItem "/Library/dns_lookup.lbi" -->    
+        <div id="dns_tool">
+ <form name="dns"
+          action="/dnstools.php"
+          method="get">           
+<h2><span class="hd">DNS Lookup</span></h2>
+                     
+
+<div class="tooltitle">
+<span class="mid">Look up DNS record(s) (ex. A, MX, NS)</span></div>
+                        
+
+                    
+  <div class="field"><input type="hidden"
+                                   name="tool"
+                                   style="font-size:9px"
+                                   value="dns" />
+                                   <input name="user_data"
+                                   type="text"
+                                   value=""
+                                   size="15"
+                                   maxlength="75" 
+								   class="text-label"/>
+                                   <select name="type">
+                                <option value="A">
+                                    A
+                                </option>
+
+                                <option value="MX">
+                                    MX
+                                </option>
+
+                                <option value="CNAME">
+                                    CNAME
+                                </option>
+
+                                <option value="NS">
+                                    NS
+                                </option>
+
+                                <option value="PTR">
+                                    PTR
+                                </option>
+
+                                <option value="TXT">
+                                    TXT
+                                </option>
+
+                                <option value="ANY">
+                                    ANY
+                                </option>
+
+                                <option value="SOA">
+                                    SOA
+                                </option>
+
+                                <option value="AAAA">
+                                    AAAA
+                                </option>
+
+                                <option value="HINFO">
+                                    HINFO
+                                </option>
+                            </select> <input type="submit"
+                                   value="Go	"  class="btn-send"/></div>
+               
+          
+         
+    </form><!-- tool table-->
+    </div><!-- #EndLibraryItem --></div>
+                      
+                      
+  <!--mod-1-->                              
+                      
+                      
+                      
+                      
+                      <div class="mod-1"><!-- #BeginLibraryItem "/Library/spamdb.lbi" --><!-- tool table-->
+<form name="spam_db" action="/dnstools.php" method="get">
+<div id="spamdb_tool" >
+	<h2><span class="hd">Spam DB Lookup </span></h2>
+          <div class="tooltitle"><span class="mid"> Check  against spammer databases. </span></div>
+             
+                  <div class="field"><input type="hidden" name="tool" value="spam_db" />
+                            <input type="text" name="user_data" value="" class="text-label"/>
+                            <input name="submit" type="submit" value="Check"  class="btn-send" />                  </div>
+       
+             
+     
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --><!--dos <td valign="top">&nbsp;</td> aca-->
+                      </div>
+                      
+  <!--mod-1-->         
+
+                      <div class="mod-1"><!-- #BeginLibraryItem "/Library/domain_whois.lbi" --><!-- tool table-->
+<form name="whois" action="/dnstools.php" method="get" >
+<div id="domain_whois_tool">
+	<h2><span class="hd">Whois Lookup(Domain)</span></h2>
+           
+                  <div class="tooltitle"><span class="mid">Contact info for a domain</span> </div>
+           
+                  <div class="field"><input type="hidden" name="tool" value="whois" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input name="submit" type="submit" value="Go"  class="btn-send" />                  </div>
+      
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+                      
+  <!--mod-1-->       
+                      
+                      <div class="mod-1"><!-- #BeginLibraryItem "/Library/reverse_dns_lookup.lbi" --><form name="rdns" action="/dnstools.php" method="get">
+<div id="rdns_tool">
+	<h2><span class="hd">Reverse DNS Lookup </span></h2>
+         
+                  <div class="tooltitle"><span class="mid">Check if your IP has a reverse DNS entry.</span> </div>
+           
+                  <div align="left" class="field"><input type="hidden" name="tool" value="rdns" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input type="submit" value="Go" class="btn-send" />
+                  </div>
+      
+</div>
+</form><!-- #EndLibraryItem --></div>
+                         
+                         
+                         
+  <!--mod-1-->         
+                         
+                         
+<div class="mod-1"><!-- #BeginLibraryItem "/Library/isp_cached_dns.lbi" --><form name="cached_dns" action="/dnstools.php" method="get">
+<div id="isp_cached_tool">
+	<h2><span class="hd">ISP Cached DNS</span></h2>
+            
+                  <div class="tooltitle"><span class="mid">Check cached DNS at major ISPs.</span></div>
+            
+                  <div class="field"><input type="hidden" name="tool" value="cached_dns" />
+                            <input name="user_data" type="text" value="" size="15" class="text-label" />
+                            <select name="type">
+                                 <option value="A">A</option>
+                                 <option value="MX">MX</option>
+                                 <option value="CNAME">CNAME</option>
+                                 <option value="NS">NS</option>
+                                 <option value="PTR">PTR</option>
+                                 <option value="TXT">TXT</option>
+                                 <option value="ANY">ANY</option>
+                                 <option value="SOA">SOA</option>
+                                 <option value="AAAA">AAAA</option>
+                                 <option value="HINFO">HINFO</option>
+                            </select>
+                            <input type="submit" value="Go"  class="btn-send" />
+                  </div>
+     
+</div>
+</form><!-- #EndLibraryItem --></div>
+                      
+                      
+                      
+  <!--mod-1-->          
+ 
+ 
+                      <div class="mod-1"><!-- #BeginLibraryItem "/Library/dec2hex.lbi" -->  <form name="decimal2ip"
+          action="/dnstools.php"
+          method="get" style="margin-bottom:0;">
+        <div id="decimal2hex_tool">
+              
+<h2><span class="hd">Decimal to hex</span></h2>
+                                <span class="mid">Converts a decimal IP to hex</span>
+     <div class="field"><input type="hidden"
+                                   name="tool"
+                                   value="decimal2ip" />
+                                   <input type="text"
+                                   name="user_data"
+                                    class="text-label"
+                                   value="" /> <input type="submit"
+                                   value="Go"  class="btn-send"/></div>
+                      
+        </div>
+    </form><!-- tool table--><!-- #EndLibraryItem --></div>
+                        
+                           
+  <!--mod-1-->                                     
+                           
+                           <div class="mod-1"><!-- #BeginLibraryItem "/Library/ip_routing.lbi" --><div id="ip_routing_tool" >
+	<h2><span class="hd">IP Routing Lookup</span></h2>
+         
+		
+            <div class="tooltitle"><span class="mid">Shows IP routing information from RADB.</span> </div>
+         
+            <div class="field"><form name="radb" action="/dnstools.php" method="get">
+            <input type="hidden" name="tool" value="radb"/>
+            <input type="text" name="user_data" value=""  class="text-label" />
+            <input type="submit" value="Go"  class="btn-send"/>
+          </form> </div>
+         
+</div><!-- #EndLibraryItem --></div>
+                      
+                      
+  <!--mod-1-->                            
+                      
+                      
+                      
+         
+                           <div class="mod-1"><!-- #BeginLibraryItem "/Library/resolve_host.lbi" --><!-- tool table-->
+<form name="hostresolve" action="/dnstools.php" method="get">
+<div id="resolve_tool" >
+<h2><span class="hd">Resolve Host</span></h2>
+                  <div class="tooltitle"><span class="mid">Find IP of the hostname</span> </div>
+            
+                  <div class="field"><input type="hidden" name="tool" value="hostresolve" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input name="submit" type="submit" value="Go"  class="btn-send" />                  </div>
+            
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+                      
+                      
+
+  <!--mod-1-->         
+
+                      
+                      
+                    
+                           <div class="mod-1"><!-- #BeginLibraryItem "/Library/ip_whois.lbi" --><!-- tool table-->
+<form name="ipwhois" action="/dnstools.php" method="get" style="margin-bottom:0;">
+<div id="ip_whois_tool" >
+	<h2><span class="hd">Whois Lookup(IP)</span></h2>
+   
+             
+                  <div align="left" class="tooltitle"><span class="mid">Contact info for an IP </span> </div>
+           
+                  <div class="field"><input type="hidden" name="tool" value="ipwhois" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input name="submit" type="submit" value="Go"  class="btn-send" />
+                  </div>
+           
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+                 
+  <!--mod-1-->       
+               
+                           <div class="mod-1"><!-- #BeginLibraryItem "/Library/url_ob.lbi" --><!-- tool table-->
+<form name="obfuscate" action="/dnstools.php" method="get">
+<div id="url_ob_tool" >
+	<h2><span class="hd">URL Obfuscator</span></h2>
+            
+                  <div class="tooltitle"><span class="mid">Obfuscates URLs.</span> </div>
+           
+                  <div class="field"><input type="hidden" name="tool" value="obfuscate" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input type="submit" value="Go"  class="btn-send" />
+                  </div>
+      
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+
+
+  <!--mod-1-->       
+
+                     
+                           <div class="mod-1"><!-- #BeginLibraryItem "/Library/abuse.lbi" --><!-- tool table-->
+<form name="abuse_net" action="/dnstools.php" method="get" >
+<div id="abuse_tool">
+	<h2><span class="hd">Abuse Contact Lookup</span></h2>
+           
+           
+                  <div align="left" class="tooltitle"><span class="mid">Finds abuse contact for a domain</span> </div>
+           
+                  <div align="left" class="field"><input type="hidden" name="tool" value="abuse_net" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input name="submit" type="submit" value="Go"  class="btn-send" />                  </div>
+          
+    
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+                       
+                       
+                       
+  <!--mod-1-->          
+                 
+                        <div class="mod-1"><!-- #BeginLibraryItem "/Library/free_email.lbi" --><!-- tool table-->
+<form name="free_email" action="/dnstools.php" method="get">
+<div id="free_email_tool">
+	<h2><span class="hd">Free Email Address </span></h2>
+            
+                  <div align="left" class="tooltitle"><span class="mid">Identify free E-mail Accounts </span> </div>
+             
+                  <div align="left" class="field"><input type="hidden" name="tool" value="free_email" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input name="submit" type="submit" value="Go"  class="btn-send" />                  </div>
+           
+             
+  </div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+
+
+  <!--mod-1-->         
+
+
+                     
+                        <div class="mod-1"><!-- #BeginLibraryItem "/Library/hex2dec.lbi" --><!-- tool table-->
+<form name="ip2decimal" action="/dnstools.php" method="get">
+<div id="hex2dec_tool">
+	<h2><span class="hd">Hex to decimal</span></h2>
+            
+                  <div class="tooltitle"><span class="mid">Converts a hex IP to decimal </span> </div>
+          
+                  <div class="field"><input type="hidden" name="tool" value="ip2decimal" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input type="submit" value="Go "  class="btn-send" />                  </div>
+     
+             
+  
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+                    
+                   
+
+  <!--mod-1-->                           
+                   
+                   
+                   
+                           <div class="mod-1"><!-- #BeginLibraryItem "/Library/url_deob.lbi" --><!-- tool table-->
+<form name="deobfuscate" action="/dnstools.php" method="get">
+<div id="url_deob_tool" >
+	<h2><span class="hd">URL De-obfuscator</span></h2>
+            
+                  <div class="tooltitle"><span class="mid">De-obfuscates URLs.</span> </div>
+           
+                  <div class="field"><input type="hidden" name="tool" value="deobfuscate" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input type="submit" value="Go"  class="btn-send" />
+                  </div>
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+
+
+
+  <!--mod-1-->         
+ 
+<div class="mod-1"><!-- #BeginLibraryItem "/Library/tracepath.lbi" --><!-- tool table-->
+<form name="tracepath" action="/dnstools.php" method="get">
+
+
+<div id="tracepath_tool">
+
+	<h2><span class="hd">Tracepath</span></h2>
+            
+                  <div class="tooltitle" ><span class="mid">Tracepath linux command</span></div> 
+            
+                  <div class="field"><input type="hidden" name="tool" value="tracepath" />
+                            <input type="text" name="user_data" value="" class="text-label" />
+                            <input name="submit" type="submit" value="Go"  class="btn-send" />
+                  </div>
+            
+</div>
+</form>
+<!-- tool table--><!-- #EndLibraryItem --></div>
+
+
+</div>
+
+<div class="menu-adds">
+<ul>
+<li><a class="add-one" href="html/abuse_net.php" title="Abuse Net">Abuse Net</a></li>
+<li>
+<a class="add-one" href="html/cidr.php" title="CIDR">CIDR</a>
+</li>
+<li>
+<a class="add-one" href="html/cse_html.php"  title="Cse html">Cse HTML</a>
+</li>
+<li>
+<a class="add-one" href="html/dec_to_hex.php"  title="Dec to Hex">Dec to Hex</a>
+</li>
+<li>
+<a class="add-one" href="html/dns.php"  title="DNS">DNS</a>
+</li>
+<li>
+<a class="add-one" href="html/domain_info.php"  title="Domain Info">Domain Info</a>
+</li>
+<li>
+<a class="add-one" href="html/free_email.php"  title="Free Email">Free Email</a>
+</li>
+<li>
+<a class="add-one" href="html/ip_routing.php"  title="Ip Routing">Ip Routing</a>
+</li>
+<li>
+<a class="add-one" href="html/iptocountry.php" title="Ip to Country">Ip To Country</a>
+</li>
+<li>
+<a class="add-one" href="html/isp_cached.php"  title="Isp Cached">Isp Cached</a>
+</li>
+<li>
+<a class="add-one" href="html/ping.php"  title="Ping">Ping</a>
+</li>
+<li>
+<a class="add-one" href="html/rdns.php" title="Rdns">Rdns</a>
+</li>
+<li>
+<a class="add-one" href="html/resolve.php"  title="Resolve">Resolve</a>
+</li>
+<li>
+<a class="add-one" href="html/server_status.php"  title="Server Status">Server Status</a>
+</li>
+<li>
+<a class="add-one" href="html/spamdb.php"  title="Spam DB">Spam DB</a>
+</li>
+<li>
+<a class="add-one" href="html/tracepath.php"  title="Tracepath">Tracepath</a>
+</li>
+<li>
+<a class="add-one" href="html/traceroute.php"  title="Traceroute">Traceroute</a>
+</li>
+<li>
+<a class="add-one" href="html/url_checker.php"  title="Url Checker">Url Checker</a>
+</li>
+<li>
+<a class="add-one" href="html/url_deob.php" title="Url Deob">Url Deob</a>
+</li>
+<li>
+<a class="add-one" href="html/urlobf.php"  title="Url Obf">Url Obf</a>
+</li>
+<li>
+<a class="add-one" href="html/whois_domain.php"  title="Who is Domain">Who is Domain</a>
+</li>
+<li>
+<a class="add-one" href="html/whois_ip.php" title="Who is IP">Who is IP</a>
+</li>
+</ul>
+</div>
+
+
+
+
+
+</div>
+
+
+
+<div class="modulo-b">
+
+<div class="processing">
+<label class="hide"><span class="style3">Processing....</span></label>
+</div>
+
+<div class="ContentIpLocal">
+<div class="your-IP">
+<span>Your IP is 66.162.188.226</span>
+<div class="utilities"><a href="#" onclick = "return GB_show('IP Location', '/location.php', 600, 820)" title="Map your IP">Click here to map your IP's location</a></div>
+</div>
+<!-- #EndLibraryItem -->
+
+
+<!--endIplocal-->
+</div>
+
+<div class="adds300">
+<!-- e-planning v3 - Comienzo espacio MARCHEX _ Iptools _ RON _ 300X250 -->
+<script type="text/javascript" language="JavaScript1.1">
+<!--
+var rnd = (new String(Math.random())).substring(2,8) + (((new Date()).getTime()) & 262143);
+var cs = document.charset || document.characterSet;
+document.write('<scri' + 'pt language="JavaScript1.1" type="text/javascript" src="http://ads.us.e-planning.net/eb/3/630b/cd569be07021be3b?o=j&rnd=' + rnd + '&crs=' + cs + '"></scr' + 'ipt>');
+//-->
+</script>
+<noscript><a href="http://ads.us.e-planning.net/ei/3/630b/cd569be07021be3b?it=i&rnd=$RANDOM" target="_blank"><img alt="e-planning.net ad" src="http://ads.us.e-planning.net/eb/3/630b/cd569be07021be3b?o=i&rnd=$RANDOM" border=0></a></noscript>
+<!-- e-planning v3 - Fin espacio MARCHEX _ Iptools _ RON _ 300X250 -->
+</div>
+<div class="adds300">
+<!-- e-planning v3 - Comienzo espacio MARCHEX _ Iptools _ RON _ 300x250_2 -->
+<script type="text/javascript" language="JavaScript1.1">
+<!--
+var rnd = (new String(Math.random())).substring(2,8) + (((new Date()).getTime()) & 262143);
+var cs = document.charset || document.characterSet;
+document.write('<scri' + 'pt language="JavaScript1.1" type="text/javascript" src="http://ads.us.e-planning.net/eb/3/630b/9de258fe65141dd0?o=j&rnd=' + rnd + '&crs=' + cs + '"></scr' + 'ipt>');
+//-->
+</script>
+<noscript><a href="http://ads.us.e-planning.net/ei/3/630b/9de258fe65141dd0?it=i&rnd=$RANDOM" target="_blank"><img width="300" height="250"  alt="e-planning.net ad" src="http://ads.us.e-planning.net/eb/3/630b/9de258fe65141dd0?o=i&rnd=$RANDOM" border=0></a></noscript>
+<!-- e-planning v3 - Fin espacio MARCHEX _ Iptools _ RON _ 300x250_2 -->
+</div>
+	
+    
+    
+	<!---endMOdb-->
+	
+	</div>
+     
+
+<div class="modulo-c">
+
+	</div>
+    <!--endcontentmodulos-->
+	</div>
+	
+	
+	
+	
+
+
+
+<div class="footer">
+
+  
+<div id="footerlinks">
+  
+
+<div class="footer-1">
+
+<a class="add-one" href="html/abuse_net.php" title="Abuse Net" target="_blank">Abuse Net</a>
+<a class="add-one" href="html/cidr.php"title="CIDR">CIDR</a>
+<a class="add-one" href="html/cse_html.php"  title="Cse html">Cse HTML</a>
+<a class="add-one" href="html/dec_to_hex.php"  title="Dec to Hex">Dec to Hex</a>
+<a class="add-one" href="html/dns.php" title="DNS">DNS</a>
+<a class="add-one" href="html/domain_info.php"  title="Domain Info">Domain Info</a>
+<a class="add-one" href="html/free_email.php" title="Free Email">Free Email</a>
+<a class="add-one" href="html/ip_routing.php" title="Ip Routing">Ip Routing</a>
+<a class="add-one" href="html/iptocountry.php"  title="Ip to Country">Ip To Country</a>
+<a class="add-one" href="html/isp_cached.php" title="Isp Cached">Isp Cached</a>
+<a class="add-one" href="html/ping.php" title="Ping">Ping</a>
+<a class="add-one" href="html/rdns.php" title="Rdns">Rdns</a>
+<a class="add-one" href="html/resolve.php" title="Resolve">Resolve</a>
+<a class="add-one" href="html/server_status.php"  title="Server Status">Server Status</a>
+<a class="add-one" href="html/spamdb.php" title="Spam DB">Spam DB</a>
+<a class="add-one" href="html/tracepath.php" title="Tracepath">Tracepath</a>
+<a class="add-one" href="html/traceroute.php" title="Traceroute">Traceroute</a>
+<a class="add-one" href="html/url_checker.php" title="Url Checker">Url Checker</a>
+<a class="add-one" href="html/url_deob.php" title="Url Deob">Url Deob</a>
+<a class="add-one" href="html/urlobf.php" title="Url Obf">Url Obf</a>
+<a class="add-one" href="html/whois_domain.php" title="Who is Domain">Who is Domain</a>
+<a class="add-one" href="html/whois_ip.php" title="Who is IP">Who is IP</a>
+                  
+			</div>
+        
+    <div class="footer-2">
+    <div class="logo-dot-fox" style="float:left; width:60px;"><img src="http://www.iptools.com/dot-fox.png" width="51" height="26" /></div>
+ <span>Copyright 1997 - <script language="javascript" type="text/javascript">document.write(comscore);</script>2012 </span>
+    <a href="http://www.myblog.com" target="_blank"	>My Blog</a>
+    <script src='http://objects.mundofox.com/js/comscore/clickaqui.js' type='text/javascript' language='javascript'></script>
+    <a href="javascript:anunciate()">Advertising</a> 
+    
+    
+              </div>
+	 
+	 </div>	
+	 
+<script language="JavaScript" type="text/javascript">
+function anunciate(){
+window.open("http://www.sugerimos.com/coti.asp","pollwin","toolbar=no,scrollbars=yes,directories=no, status=no,menubar=no,resizable=no,width=583,height=515")
+}
+  
+function privacidad(){
+window.open("http://www.sugerimos.com/click/privacidad.asp?sitio=de IpTools","pollwin","toolbar=no,scrollbars=yes,directories=no, status=no,menubar=no,resizable=no,width=583,height=515")
+}
+
+function contactanos(){
+	window.open("http://www.clickaqui.com/contactanos.asp?sitio=IpTools","pollwin","toolbar=no,scrollbars=no,directories=no, status=no,menubar=no,resizable=no,width=582,height=500")
+}
+</script>
+    
+   
+</div>
+
+<!-- e-planning v3 - Comienzo espacio MARCHEX _ Iptools _ RON _ 1X1(POP UP) -->
+<script type="text/javascript" language="JavaScript1.1">
+<!--
+//juancho13052011
+var rnd = (new String(Math.random())).substring(2,8) + (((new Date()).getTime()) & 262143);
+var cs = document.charset || document.characterSet;
+document.write('<scri' + 'pt language="JavaScript1.1" type="text/javascript" src="http://ads.us.e-planning.net/eb/3/630b/79315a9353a3fcbb?o=j&rnd=' + rnd + '&crs=' + cs + '"></scr' + 'ipt>');
+//-->
+</script>
+<noscript><a href="http://ads.us.e-planning.net/ei/3/630b/79315a9353a3fcbb?it=i&rnd=$RANDOM" target="_blank"><img alt="e-planning.net ad" src="http://ads.us.e-planning.net/eb/3/630b/79315a9353a3fcbb?o=i&rnd=$RANDOM"></a></noscript>
+<!-- e-planning v3 - Fin espacio MARCHEX _ Iptools _ RON _ 1X1(POP UP) -->
+
+
+
+<!--endfooter-->
+
+</div>
+
+<!--endwrap-->
+
+
+
+</body>
+</html>

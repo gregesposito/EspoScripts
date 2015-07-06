@@ -1,0 +1,109 @@
+AIAWRITE - Utility to Write AIA information - Version 1.0
+
+Syntax:
+
+    AIAWRITE group field1=[value1]..[fieldn=[valuen]]|/f=file,
+
+where:
+
+group   The name of the device group.
+fieldn  The name of the field to write
+valuen  The value to assign to fieldn.  For the USERDEVICE group,
+        a blank value means delete this field, if the field already
+        exists, or create a field with a NULL value if the field does
+        not exist.  For all others it means assign a zero or null value.
+file    Name of file to get field/value pairs from.  Each line in
+        this file contains one field/value pair, separated by '='.  
+
+***********************************************************************
+AIAWRITE Utility Author Notes:
+
+  1. All options, group and field names are case-insensitive except for
+     the USERDEVICE group and the prefix.
+  2. If you specify no options or incorrect options, then this help text
+     is displayed if this file exists.  You may use the more command to 
+     see it page by page:
+           AIAWRITE |MORE
+  3. There is an undocumented /d debug flag.  This may help if you get a
+     failure and are not sure where it is comming from or what it means.
+  4. You can specify either field/value pairs or the /f= option, but
+     not both.
+  5. You can add or remove a new NIC by chaning the size of NUMNICS.    
+  7. If the value is a string, it must be surrounded by the double
+     quote character '"' if there is a space in it and it is specified
+     as a field=value command line option.  Double quotes are optional
+     around string values specified in the file.
+  8. When the AIA Information area is uninitialized (machine ships from 
+     factory this way), you must write a group before AIAREAD will be 
+     able to read it.  If you only want to initialize the group, but 
+     don't want to write it, just write the group witout any field/value 
+     pairs.  This will initialize all strings to '', all dates  and 
+     numbers to zeros.
+    
+*********************************************************************************
+Below is a list of error codes that currently are upon exit of 
+AIAWRITE.EXE.  They can be tested in a .bat file by the errorlevel command, if 
+desired.
+
+// Error Exit Codes defined in AIAWRITE
+#define SUCCESS                    0X00 // everything is OK
+#define FILE_OPEN_ERROR            0x20 // fopen failed (disk full, file write protected,open?)
+#define FIELD_NOT_FOUND            0x21 // A valid field was not found in the AIA data area
+#define PRINT_FORMAT_ERROR         0X22 // Tryed to format and print line, but line was invalid
+#define NO_GROUP_SPECIFIED         0X23 // Group option is REQUIRED, but was not specified
+#define INVALID_GROUP_ENTERED      0X24 // Group Name entered is unknown
+#define INVALID_FIELD_ENTERED      0X25 // Can't find this field name associated with group
+#define INVALID_FILE_OPTION        0X26 // User forgot to use '=' with -f option
+#define INVALID_PREFIX_OPTION      0X27 // User forgot to use '=' with -p option
+#define UNKNOWN_OPTION_SPECIFIED   0X28 // User specified an option that we don't support 
+#define INVALID_NIC_PARM           0X29 // User requested nth NIC, 'n' is either invalid or > NUMNICS
+#define TOO_MANY_LABEL_VALUE_PAIRS 0X2A // More than 5 Label=Value pairs for USERDEVICE group
+#define NO_AIA_EPROM_FOUND         0X2B // This client does not appear to have an RFID EPROM
+// Error codes from reading the RFID EPROM
+#define EE_ERR_NO_ERROR                0
+#define EE_ERR_COMMUNICATION_FAILURE   1
+#define EE_ERR_BAD_HEADER              2
+#define EE_ERR_UNKNOWN_VERSION         3
+#define EE_ERR_OUT_OF_SPACE            4
+#define EE_ERR_REREAD_FAILURE1         5
+#define EE_ERR_REREAD_FAILURE2         6
+#define EE_ERR_INVALID_CHECKSUM        7
+#define EE_ERR_ILLEGAL_INSTANCE        8
+#define EE_ERR_NOT_FOUND               9
+#define EE_CORRUPT_USER_AREA          10
+#define EE_CORRUPT_RF_ID              11
+*********************************************************************************
+Valid Groups and their associated fields are listed below:
+
+  NETWORKCONNECTION  NUMNICS
+                     GATEWAY
+                     IPADDRESS[n]   (1<=n<=NUMNICS, default=1)
+                     SUBNETMASK[n]
+                     SYSTEMNAME
+                     LOGINNAME
+
+  USERDEVICE         <Field1> - These fields are defined by the 
+                     :          user;  maximum is five user fields
+                     <Field5>
+
+  PRELOADPROFILE     IMAGEDATE
+                     IMAGE
+
+  USERASSETDATA      PURCHASE_DATE
+                     LAST_INVENTORIED
+                     WARRANTY_END
+                     WARRANTY_DURATION
+                     AMOUNT
+                     ASSET_NUMBER
+
+  LEASEDATA          LEASE_START_DATE
+                     LEASE_END_DATE
+                     LEASE_TERM
+                     LEASE_AMOUNT
+                     LESSOR
+
+  OWNERDATA          OWNERNAME
+                     DEPARTMENT
+                     LOCATION
+                     PHONE_NUMBER
+                     OWNERPOSITION

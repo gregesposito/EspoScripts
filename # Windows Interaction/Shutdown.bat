@@ -1,0 +1,1 @@
+shutdown -f -s -c "Your machine will shutdown now".

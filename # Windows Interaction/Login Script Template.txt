@@ -1,0 +1,31 @@
+' this is required for both
+Option Explicit
+Dim objNetwork, objFile, path
+
+set objNetwork = wScript.CreateObject("WScript.Network")
+set objFile = WScript.CreateObject("Scripting.FileSystemObject")
+
+
+
+
+
+
+' this function checks and maps network drives
+Sub Map(drive, path)
+	if (objFile.DriveExists(drive) = false) then
+		if objFile.FolderExists(path) then
+			objNetwork.MapNetworkDrive drive, path
+		end if
+	end if
+end sub
+
+' To use add a network drive using this function
+' If you need to get a user's name use the function objNetwork.UserName
+
+Map "Z:", "\\thingone\files"
+
+
+path = "\\thingone\"
+
+On Error Resume Next
+objNetwork.AddWindowsPrinterConnection path & "HP1320_DEV"
